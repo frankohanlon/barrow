@@ -1,0 +1,527 @@
+'CR1000 Series Datalogger
+' Bob Busey & Bill Cable for:
+' NGEE Barrow Intensive Sites
+' This program is just the Fall 2012 program
+' I'll do a second one once we get the full complement of instrumentation in.  
+' The wiring will need to change some.
+' Draft V1.0
+' Creation Dates: 2012-08-16
+' Modified: 
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''  FALL SENSOR LIST   '''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' 3 -- HFP01 Heat Flux Plates
+' 9 -- Vitel Soil Moisture Probes
+' 9 -- East30 Sensors Thermal Conductivity Probes
+' 5 -- 16 point thermistor strings
+' 9 -- thermistors to be installed adjacent to the soil moisture probes
+' 1 -- 5 point shallow borehole 
+' 1 -- Air Temperature
+' 1 -- SR50A Snow Depth
+' 3 -- HFP01 Heat Flux Sensors
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''  LOGGER WIRING   ''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' SE1  -- HFP01 #1 HI
+' SE2  -- HFP01 #1 LO
+' SE3  -- HFP01 #2 HI
+' SE4  -- HFP01 #2 LO
+' SE5  -- HFP01 #3 HI
+' SE6  -- HFP01 #3 LO
+' SE7  --
+' SE8  --
+' SE9  -- 
+' SE10 --
+' SE11 -- 
+' SE12 -- 
+' SE13 -- AM16/32B #1 COM ODD HI, Precision Resistor to VX2
+' SE14 -- AM16/32B #1 COM ODD LO, Precision Resistor to VX2
+' SE15 -- AM16/32B #2 COM ODD HI, Precision Resistor to VX3
+' SE16 -- AM16/32B #2 COM ODD LO, Precision Resistor to VX3
+
+' VX1 -- 
+' VX2 -- Precision resistors to Mux 2 COM ODD HI, SE1, COM ODD LO, SE2
+' VX3 -- Precision resistors to Mux 3 COM ODD HI, SE1, COM ODD LO, SE2
+
+' P1 -- 
+' P2 -- 
+
+' C1 -- AM16/32B #1 & 2 -- CLK
+' C2 -- AM16/32B #1 -- RES
+' C3 -- AM16/32B #2 -- RES
+' C4 -- 
+' C5 -- SDI 12 Devices (9 Vitel Probes & 1 SR50A)
+' C6 -- Vitel Probe CONTROL
+' C7 -- 
+' C8 -- 
+' SW12V -- Radio Power
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''   Sensor Wiring   ''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'' Declare Public Variables ''
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+    ''' Diagnostic Variables
+    Public batt_volt
+    Public Ptemp
+    Public p_sig
+    
+    
+    ''' Thermistor Related Variables
+    Public Thermistors_Mux1(64), Thermistors_offset_Mux1(64)   ' thermistors on AM16/32B #1
+    Public Thermistors_Mux2(32), Thermistors_offset_Mux2(32)   ' thermistors on AM16/32B #2    
+    Public TP_Rt, TP_ratio      ' thermistor voltage to resistance variables
+    Public Therm_field_mux1(64) As String * 35
+    Public Therm_field_mux2(32) As String * 35
+    Public mux1_field As String * 2000
+    Public mux2_field As String * 2000
+    
+    ''' Vitel Probes
+    Public Hydra(9,9) '9 parameters from the Hydra Probe's II
+    Public Hydra_moisture(9), Hydra_temp(9), Hydra_cond(9), Hydra_real_perm(9), Hydra_img_perm(9)
+
+    ''' Snow Related
+    Public Raw_Dist, Distance, SnowDepth, SR50A_height
+
+    ''' Heat Flux
+    Public shf(3)
+    
+    ''' Extras
+    Dim i,j,k 
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'' Aliases  ''''''''''''''''''
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+  Alias Thermistors_Mux2 ( 31 ) = AirTemp
+
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'' Declare Constants '''''''''
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+    'Steinhart-Hart Fit Constants
+    Const C1 = 0.0011281
+    Const C2 = 0.0002343
+    Const C3 = 0.000000086946
+    Const Rf = 25000  ' Resistor Value
+    Const HFP01_cal_1 = 60.0    'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_2 = 60.0    'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_3 = 60.0    'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)        
+    
+''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''
+'' Define Units for the Output Variables  ''
+''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''
+    Units batt_volt = Volts DC
+    Units Ptemp = Degrees Celsius
+    Units SnowDepth = Centimeters
+        
+'''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''
+'' Define Data Output Tables ''
+'''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''
+
+    DataTable (Diagnostic,1,-1)
+      DataInterval (0,1440,Min,10)
+      Minimum (1,batt_volt,FP2,False,False)
+      Minimum (1,PTemp,FP2,False,False)
+      Average (1,PTemp,FP2,False)
+      Maximum (1,PTemp,FP2,False,False)
+      Sample (1,p_sig,IEEE4)        
+    EndTable
+    
+
+    DataTable(site_data,true,-1)
+      DataInterval(0,10,Min,10)
+      Minimum(1,batt_volt,FP2,False,False)
+      Average(1,Ptemp,FP2, 0)
+      Sample(1,p_sig,IEEE4)
+      
+      ' Thermistors
+      Average(64,Thermistors_Mux1(),FP2,False)
+      FieldNames (mux1_field)
+      
+      Average(31,Thermistors_Mux2(),FP2,False)    
+      FieldNames (mux2_field)
+      
+      'Hydra Probe's
+      Sample(9,Hydra_moisture(),FP2)  'soil moisture, VWC
+      Sample(9,Hydra_temp(),FP2)  'soil temperature, deg. C
+      Sample(9,Hydra_cond(),FP2)  'soil conductivity, Siemens / Meter
+      Sample(9,Hydra_real_perm(),FP2)  'real dielectric permittivity
+      Sample(9,Hydra_img_perm(),FP2)  'imaginary dielectric permittivity
+      'soil heat flux plate
+      Average(3,shf(),FP2,0) 
+      ' snow 
+      Sample(1,SnowDepth,FP2)
+    EndTable
+
+    DataTable(Snow,true,-1)
+      DataInterval(0,5,Min,10)
+      Sample(1,SnowDepth,FP2)
+      Sample (1,Distance,FP2)
+    EndTable
+    
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Main Program '''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+BeginProg
+
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  '' Initiazlize All of the offest parameters  '''''''
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+  ' Snow
+  SR50A_height = 120  ' units are centimeters
+
+  ' Thermistor offsets  
+  Thermistors_offset_Mux1 ( 1  ) = 0.0   '' Bore Hole - 1 Thermistor _1_
+  Thermistors_offset_Mux1 ( 2  ) = 0.0   '' Bore Hole - 1 Thermistor _2_
+  Thermistors_offset_Mux1 ( 3  ) = 0.0   '' Bore Hole - 1 Thermistor _3_
+  Thermistors_offset_Mux1 ( 4  ) = 0.0   '' Bore Hole - 1 Thermistor _4_
+  Thermistors_offset_Mux1 ( 5  ) = 0.0   '' Bore Hole - 1 Thermistor _5_
+  Thermistors_offset_Mux1 ( 6  ) = 0.0   '' Bore Hole - 1 Thermistor _6_
+  Thermistors_offset_Mux1 ( 7  ) = 0.0   '' Bore Hole - 1 Thermistor _7_
+  Thermistors_offset_Mux1 ( 8  ) = 0.0   '' Bore Hole - 1 Thermistor _8_
+  Thermistors_offset_Mux1 ( 9  ) = 0.0   '' Bore Hole - 1 Thermistor _9_
+  Thermistors_offset_Mux1 ( 10 ) = 0.0   '' Bore Hole - 1 Thermistor _10_
+  Thermistors_offset_Mux1 ( 11 ) = 0.0   '' Bore Hole - 1 Thermistor _11_
+  Thermistors_offset_Mux1 ( 12 ) = 0.0   '' Bore Hole - 1 Thermistor _12_
+  Thermistors_offset_Mux1 ( 13 ) = 0.0   '' Bore Hole - 1 Thermistor _13_
+  Thermistors_offset_Mux1 ( 14 ) = 0.0   '' Bore Hole - 1 Thermistor _14_
+  Thermistors_offset_Mux1 ( 15 ) = 0.0   '' Bore Hole - 1 Thermistor _15_
+  Thermistors_offset_Mux1 ( 16 ) = 0.0   '' Bore Hole - 1 Thermistor _16_
+  
+  Thermistors_offset_Mux1 ( 17 ) = 0.0   '' Bore Hole - 2 Thermistor _1_
+  Thermistors_offset_Mux1 ( 18 ) = 0.0   '' Bore Hole - 2 Thermistor _2_
+  Thermistors_offset_Mux1 ( 19 ) = 0.0   '' Bore Hole - 2 Thermistor _3_
+  Thermistors_offset_Mux1 ( 20 ) = 0.0   '' Bore Hole - 2 Thermistor _4_
+  Thermistors_offset_Mux1 ( 21 ) = 0.0   '' Bore Hole - 2 Thermistor _5_
+  Thermistors_offset_Mux1 ( 22 ) = 0.0   '' Bore Hole - 2 Thermistor _6_
+  Thermistors_offset_Mux1 ( 23 ) = 0.0   '' Bore Hole - 2 Thermistor _7_
+  Thermistors_offset_Mux1 ( 24 ) = 0.0   '' Bore Hole - 2 Thermistor _8_
+  Thermistors_offset_Mux1 ( 25 ) = 0.0   '' Bore Hole - 2 Thermistor _9_
+  Thermistors_offset_Mux1 ( 26 ) = 0.0   '' Bore Hole - 2 Thermistor _10_
+  Thermistors_offset_Mux1 ( 27 ) = 0.0   '' Bore Hole - 2 Thermistor _11_
+  Thermistors_offset_Mux1 ( 28 ) = 0.0   '' Bore Hole - 2 Thermistor _12_
+  Thermistors_offset_Mux1 ( 29 ) = 0.0   '' Bore Hole - 2 Thermistor _13_
+  Thermistors_offset_Mux1 ( 30 ) = 0.0   '' Bore Hole - 2 Thermistor _14_
+  Thermistors_offset_Mux1 ( 31 ) = 0.0   '' Bore Hole - 2 Thermistor _15_
+  Thermistors_offset_Mux1 ( 32 ) = 0.0   '' Bore Hole - 2 Thermistor _16_
+  
+  Thermistors_offset_Mux1 ( 33 ) = 0.0   '' Bore Hole - 3 Thermistor _1_
+  Thermistors_offset_Mux1 ( 34 ) = 0.0   '' Bore Hole - 3 Thermistor _2_
+  Thermistors_offset_Mux1 ( 35 ) = 0.0   '' Bore Hole - 3 Thermistor _3_
+  Thermistors_offset_Mux1 ( 36 ) = 0.0   '' Bore Hole - 3 Thermistor _4_
+  Thermistors_offset_Mux1 ( 37 ) = 0.0   '' Bore Hole - 3 Thermistor _5_
+  Thermistors_offset_Mux1 ( 38 ) = 0.0   '' Bore Hole - 3 Thermistor _6_
+  Thermistors_offset_Mux1 ( 39 ) = 0.0   '' Bore Hole - 3 Thermistor _7_
+  Thermistors_offset_Mux1 ( 40 ) = 0.0   '' Bore Hole - 3 Thermistor _8_
+  Thermistors_offset_Mux1 ( 41 ) = 0.0   '' Bore Hole - 3 Thermistor _9_
+  Thermistors_offset_Mux1 ( 42 ) = 0.0   '' Bore Hole - 3 Thermistor _10_
+  Thermistors_offset_Mux1 ( 43 ) = 0.0   '' Bore Hole - 3 Thermistor _11_
+  Thermistors_offset_Mux1 ( 44 ) = 0.0   '' Bore Hole - 3 Thermistor _12_
+  Thermistors_offset_Mux1 ( 45 ) = 0.0   '' Bore Hole - 3 Thermistor _13_
+  Thermistors_offset_Mux1 ( 46 ) = 0.0   '' Bore Hole - 3 Thermistor _14_
+  Thermistors_offset_Mux1 ( 47 ) = 0.0   '' Bore Hole - 3 Thermistor _15_
+  Thermistors_offset_Mux1 ( 48 ) = 0.0   '' Bore Hole - 3 Thermistor _16_
+  
+  Thermistors_offset_Mux1 ( 49 ) = 0.0   '' Bore Hole - 4 Thermistor _1_
+  Thermistors_offset_Mux1 ( 50 ) = 0.0   '' Bore Hole - 4 Thermistor _2_
+  Thermistors_offset_Mux1 ( 51 ) = 0.0   '' Bore Hole - 4 Thermistor _3_
+  Thermistors_offset_Mux1 ( 52 ) = 0.0   '' Bore Hole - 4 Thermistor _4_
+  Thermistors_offset_Mux1 ( 53 ) = 0.0   '' Bore Hole - 4 Thermistor _5_
+  Thermistors_offset_Mux1 ( 54 ) = 0.0   '' Bore Hole - 4 Thermistor _6_
+  Thermistors_offset_Mux1 ( 55 ) = 0.0   '' Bore Hole - 4 Thermistor _7_
+  Thermistors_offset_Mux1 ( 56 ) = 0.0   '' Bore Hole - 4 Thermistor _8_
+  Thermistors_offset_Mux1 ( 57 ) = 0.0   '' Bore Hole - 4 Thermistor _9_
+  Thermistors_offset_Mux1 ( 58 ) = 0.0   '' Bore Hole - 4 Thermistor _10_
+  Thermistors_offset_Mux1 ( 59 ) = 0.0   '' Bore Hole - 4 Thermistor _11_
+  Thermistors_offset_Mux1 ( 60 ) = 0.0   '' Bore Hole - 4 Thermistor _12_
+  Thermistors_offset_Mux1 ( 61 ) = 0.0   '' Bore Hole - 4 Thermistor _13_
+  Thermistors_offset_Mux1 ( 62 ) = 0.0   '' Bore Hole - 4 Thermistor _14_
+  Thermistors_offset_Mux1 ( 63 ) = 0.0   '' Bore Hole - 4 Thermistor _15_
+  Thermistors_offset_Mux1 ( 64 ) = 0.0   '' Bore Hole - 4 Thermistor _16_
+  
+  Thermistors_offset_Mux2 ( 1 ) = 0.0   '' Bore Hole - 5 Thermistor _1_
+  Thermistors_offset_Mux2 ( 2 ) = 0.0   '' Bore Hole - 5 Thermistor _2_
+  Thermistors_offset_Mux2 ( 3 ) = 0.0   '' Bore Hole - 5 Thermistor _3_
+  Thermistors_offset_Mux2 ( 4 ) = 0.0   '' Bore Hole - 5 Thermistor _4_
+  Thermistors_offset_Mux2 ( 5 ) = 0.0   '' Bore Hole - 5 Thermistor _5_
+  Thermistors_offset_Mux2 ( 6 ) = 0.0   '' Bore Hole - 5 Thermistor _6_
+  Thermistors_offset_Mux2 ( 7 ) = 0.0   '' Bore Hole - 5 Thermistor _7_
+  Thermistors_offset_Mux2 ( 8 ) = 0.0   '' Bore Hole - 5 Thermistor _8_
+  Thermistors_offset_Mux2 ( 9 ) = 0.0   '' Bore Hole - 5 Thermistor _9_
+  Thermistors_offset_Mux2 ( 10 ) = 0.0   '' Bore Hole - 5 Thermistor _10_
+  Thermistors_offset_Mux2 ( 11 ) = 0.0   '' Bore Hole - 5 Thermistor _11_
+  Thermistors_offset_Mux2 ( 12 ) = 0.0   '' Bore Hole - 5 Thermistor _12_
+  Thermistors_offset_Mux2 ( 13 ) = 0.0   '' Bore Hole - 5 Thermistor _13_
+  Thermistors_offset_Mux2 ( 14 ) = 0.0   '' Bore Hole - 5 Thermistor _14_
+  Thermistors_offset_Mux2 ( 15 ) = 0.0   '' Bore Hole - 5 Thermistor _15_
+  Thermistors_offset_Mux2 ( 16 ) = 0.0   '' Bore Hole - 5 Thermistor _16_
+  
+  Thermistors_offset_Mux2 ( 17 ) = 0.0   '' Shallow Hole - Thermistor _1_
+  Thermistors_offset_Mux2 ( 18 ) = 0.0   '' Shallow Hole - Thermistor _2_
+  Thermistors_offset_Mux2 ( 19 ) = 0.0   '' Shallow Hole - Thermistor _3_
+  Thermistors_offset_Mux2 ( 20 ) = 0.0   '' Shallow Hole - Thermistor _4_
+  Thermistors_offset_Mux2 ( 21 ) = 0.0   '' Shallow Hole - Thermistor _5_
+  
+  Thermistors_offset_Mux2 ( 22 ) = 0.0   '' Pit 1 Thermistor _1 _
+  Thermistors_offset_Mux2 ( 23 ) = 0.0   '' Pit 1 Thermistor _2 _
+  Thermistors_offset_Mux2 ( 24 ) = 0.0   '' Pit 1 Thermistor _3 _
+  
+  Thermistors_offset_Mux2 ( 25 ) = 0.0   '' Pit 2 Thermistor _1 _
+  Thermistors_offset_Mux2 ( 26 ) = 0.0   '' Pit 2 Thermistor _2 _
+  Thermistors_offset_Mux2 ( 27 ) = 0.0   '' Pit 2 Thermistor _3 _
+
+  Thermistors_offset_Mux2 ( 28 ) = 0.0   '' Pit 3 Thermistor _1 _
+  Thermistors_offset_Mux2 ( 29 ) = 0.0   '' Pit 3 Thermistor _2 _
+  Thermistors_offset_Mux2 ( 30 ) = 0.0   '' Pit 3 Thermistor _3 _
+
+  Thermistors_offset_Mux2 ( 31 ) = 0.0   '' AirTemp
+  
+  Therm_field_mux1( 1) = "Bore Hole - 1 Thermistor 1"
+  Therm_field_mux1( 2) = "Bore Hole - 1 Thermistor 2"
+  Therm_field_mux1( 3) = "Bore Hole - 1 Thermistor 3"
+  Therm_field_mux1( 4) = "Bore Hole - 1 Thermistor 4"
+  Therm_field_mux1( 5) = "Bore Hole - 1 Thermistor 5"
+  Therm_field_mux1( 6) = "Bore Hole - 1 Thermistor 6"
+  Therm_field_mux1( 7) = "Bore Hole - 1 Thermistor 7"
+  Therm_field_mux1( 8) = "Bore Hole - 1 Thermistor 8"
+  Therm_field_mux1( 9) = "Bore Hole - 1 Thermistor 9"
+  Therm_field_mux1( 10) = "Bore Hole - 1 Thermistor 10"
+  Therm_field_mux1( 11) = "Bore Hole - 1 Thermistor 11"
+  Therm_field_mux1( 12) = "Bore Hole - 1 Thermistor 12"
+  Therm_field_mux1( 13) = "Bore Hole - 1 Thermistor 13"
+  Therm_field_mux1( 14) = "Bore Hole - 1 Thermistor 14"
+  Therm_field_mux1( 15) = "Bore Hole - 1 Thermistor 15"
+  Therm_field_mux1( 16) = "Bore Hole - 1 Thermistor 16"
+  
+  Therm_field_mux1( 17) = "Bore Hole - 2 Thermistor 1"
+  Therm_field_mux1( 18) = "Bore Hole - 2 Thermistor 2"
+  Therm_field_mux1( 19) = "Bore Hole - 2 Thermistor 3"
+  Therm_field_mux1( 20) = "Bore Hole - 2 Thermistor 4"
+  Therm_field_mux1( 21) = "Bore Hole - 2 Thermistor 5"
+  Therm_field_mux1( 22) = "Bore Hole - 2 Thermistor 6"
+  Therm_field_mux1( 23) = "Bore Hole - 2 Thermistor 7"
+  Therm_field_mux1( 24) = "Bore Hole - 2 Thermistor 8"
+  Therm_field_mux1( 25) = "Bore Hole - 2 Thermistor 9"
+  Therm_field_mux1( 26) = "Bore Hole - 2 Thermistor 10"
+  Therm_field_mux1( 27) = "Bore Hole - 2 Thermistor 11"
+  Therm_field_mux1( 28) = "Bore Hole - 2 Thermistor 12"
+  Therm_field_mux1( 29) = "Bore Hole - 2 Thermistor 13"
+  Therm_field_mux1( 30) = "Bore Hole - 2 Thermistor 14"
+  Therm_field_mux1( 31) = "Bore Hole - 2 Thermistor 15"
+  Therm_field_mux1( 32) = "Bore Hole - 2 Thermistor 16"
+  
+  Therm_field_mux1( 33) = "Bore Hole - 3 Thermistor 1"
+  Therm_field_mux1( 34) = "Bore Hole - 3 Thermistor 2"
+  Therm_field_mux1( 35) = "Bore Hole - 3 Thermistor 3"
+  Therm_field_mux1( 36) = "Bore Hole - 3 Thermistor 4"
+  Therm_field_mux1( 37) = "Bore Hole - 3 Thermistor 5"
+  Therm_field_mux1( 38) = "Bore Hole - 3 Thermistor 6"
+  Therm_field_mux1( 39) = "Bore Hole - 3 Thermistor 7"
+  Therm_field_mux1( 40) = "Bore Hole - 3 Thermistor 8"
+  Therm_field_mux1( 41) = "Bore Hole - 3 Thermistor 9"
+  Therm_field_mux1( 42) = "Bore Hole - 3 Thermistor 10"
+  Therm_field_mux1( 43) = "Bore Hole - 3 Thermistor 11"
+  Therm_field_mux1( 44) = "Bore Hole - 3 Thermistor 12"
+  Therm_field_mux1( 45) = "Bore Hole - 3 Thermistor 13"
+  Therm_field_mux1( 46) = "Bore Hole - 3 Thermistor 14"
+  Therm_field_mux1( 47) = "Bore Hole - 3 Thermistor 15"
+  Therm_field_mux1( 48) = "Bore Hole - 3 Thermistor 16"
+  
+  Therm_field_mux1( 49) = "Bore Hole - 4 Thermistor 1"
+  Therm_field_mux1( 50) = "Bore Hole - 4 Thermistor 2"
+  Therm_field_mux1( 51) = "Bore Hole - 4 Thermistor 3"
+  Therm_field_mux1( 52) = "Bore Hole - 4 Thermistor 4"
+  Therm_field_mux1( 53) = "Bore Hole - 4 Thermistor 5"
+  Therm_field_mux1( 54) = "Bore Hole - 4 Thermistor 6"
+  Therm_field_mux1( 55) = "Bore Hole - 4 Thermistor 7"
+  Therm_field_mux1( 56) = "Bore Hole - 4 Thermistor 8"
+  Therm_field_mux1( 57) = "Bore Hole - 4 Thermistor 9"
+  Therm_field_mux1( 58) = "Bore Hole - 4 Thermistor 10"
+  Therm_field_mux1( 59) = "Bore Hole - 4 Thermistor 11"
+  Therm_field_mux1( 60) = "Bore Hole - 4 Thermistor 12"
+  Therm_field_mux1( 61) = "Bore Hole - 4 Thermistor 13"
+  Therm_field_mux1( 62) = "Bore Hole - 4 Thermistor 14"
+  Therm_field_mux1( 63) = "Bore Hole - 4 Thermistor 15"
+  Therm_field_mux1( 64) = "Bore Hole - 4 Thermistor 16"
+  
+  Therm_field_mux2( 1) = "Bore Hole - 5 Thermistor 1 "
+  Therm_field_mux2( 2) = "Bore Hole - 5 Thermistor 2 "
+  Therm_field_mux2( 3) = "Bore Hole - 5 Thermistor 3 "
+  Therm_field_mux2( 4) = "Bore Hole - 5 Thermistor 4 "
+  Therm_field_mux2( 5) = "Bore Hole - 5 Thermistor 5 "
+  Therm_field_mux2( 6) = "Bore Hole - 5 Thermistor 6 "
+  Therm_field_mux2( 7) = "Bore Hole - 5 Thermistor 7 "
+  Therm_field_mux2( 8) = "Bore Hole - 5 Thermistor 8 "
+  Therm_field_mux2( 9) = "Bore Hole - 5 Thermistor 9 "
+  Therm_field_mux2( 10) = "Bore Hole - 5 Thermistor 10"
+  Therm_field_mux2( 11) = "Bore Hole - 5 Thermistor 11"
+  Therm_field_mux2( 12) = "Bore Hole - 5 Thermistor 12"
+  Therm_field_mux2( 13) = "Bore Hole - 5 Thermistor 13"
+  Therm_field_mux2( 14) = "Bore Hole - 5 Thermistor 14"
+  Therm_field_mux2( 15) = "Bore Hole - 5 Thermistor 15"
+  Therm_field_mux2( 16) = "Bore Hole - 5 Thermistor 16"
+  
+  Therm_field_mux2( 17) = "Shallow Hole - Thermistor 1"
+  Therm_field_mux2( 18) = "Shallow Hole - Thermistor 2"
+  Therm_field_mux2( 19) = "Shallow Hole - Thermistor 3"
+  Therm_field_mux2( 20) = "Shallow Hole - Thermistor 4"
+  Therm_field_mux2( 21) = "Shallow Hole - Thermistor 5"
+  
+  Therm_field_mux2( 22) = "Pit 1 Thermistor 1 "
+  Therm_field_mux2( 23) = "Pit 1 Thermistor 2 "
+  Therm_field_mux2( 24) = "Pit 1 Thermistor 3 "
+  
+  Therm_field_mux2( 25) = "Pit 2 Thermistor 1 "
+  Therm_field_mux2( 26) = "Pit 2 Thermistor 2 "
+  Therm_field_mux2( 27) = "Pit 2 Thermistor 3 "
+  
+  Therm_field_mux2( 28) = "Pit 3 Thermistor 1 "
+  Therm_field_mux2( 29) = "Pit 3 Thermistor 2 "
+  Therm_field_mux2( 30) = "Pit 3 Thermistor 3"
+  Therm_field_mux2( 31) = "AirTemp"
+  mux1_field = ""
+  For i = 1 To 63
+    mux1_field = mux1_field & Therm_field_mux1(i) & ":,"
+  Next
+  mux1_field = mux1_field & Therm_field_mux1(64)
+  mux2_field = ""
+  For i = 1 To 30
+    mux2_field = mux2_field & Therm_field_mux2(i) & ":,"
+  Next
+  mux2_field = mux2_field & Therm_field_mux1(31)
+
+  
+  Scan(10,Sec, 10, 0)
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''
+    '' Diagnostic Measurements  '''''
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''    
+    Battery(batt_volt)
+    PanelTemp(Ptemp,_60Hz)
+    p_sig = Signature
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '' Measure Thermistor Probes on Multiplexer #1 ''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''   
+    If Timeintointerval (0,5,Min) Then
+      PortSet(2,1)  'Multiplexer #1 ON
+      i = 1
+      SubScan(0,uSec,32)
+        PulsePort(1,10000)
+        BrHalf (TP_ratio, 1, mV2500, 13, Vx2, 1, 2500, False, 0, 250,1.0,0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux1(i) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i)  'calculate temperature with correction for zero offset
+  
+        BrHalf (TP_ratio, 1, mV2500, 14, Vx2, 1, 2500, False, 0, 250, 1.0, 0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux1(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i+1)  'calculate temperature with correction for zero offset
+        i = i+2      
+      NextSubScan
+      PortSet(2,0)  'Multiplexer #1 OFF
+    EndIf
+    
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '' Measure Thermistor Probes on Multiplexer #2 ''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''        
+    If TimeIntoInterval (0,5,Min) Then
+      PortSet(3,1)  'Multiplexer #2 ON
+      i = 1
+      SubScan(0,uSec,16)
+        PulsePort(1,10000)
+        BrHalf (TP_ratio, 1, mV2500, 15, Vx3, 1, 2500, False, 0, 250,1.0,0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux2(i) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux2(i)  'calculate temperature with correction for zero offset
+  
+        BrHalf (TP_ratio, 1, mV2500, 16, Vx3, 1, 2500, False, 0, 250, 1.0, 0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux2(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux2(i+1)  'calculate temperature with correction for zero offset
+        i = i+2      
+      NextSubScan
+      PortSet(3,0)  'Multiplexer #2 OFF
+    EndIf
+    '''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''    
+    '' Measure the Heat Flux Plate HFP01   ''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''    
+    VoltDiff(shf(1),3,mV25C,1,True,200,250,1,0)
+    ' Convert mV to W/m^2
+    shf(1) = shf(1) * HFP01_cal_1
+    shf(2) = shf(2) * HFP01_cal_2
+    shf(3) = shf(3) * HFP01_cal_3
+        
+    '''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''
+    '' Measure the SR50a snow sensor   ''''''
+    '''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''        
+    If  TimeIntoInterval(0,5,Min) Then
+      SDI12Recorder(Raw_Dist,5, 0, "M!", 100, 0)        ' Units are Centimeters
+      Distance = Raw_Dist*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
+      SnowDepth = SR50A_height - Distance
+    EndIf
+    
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''    
+    '' Measure Hydra II Probes  ''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''    
+    If  TimeIntoInterval(0,30,Min) Then
+      PortSet(6,1)
+      Delay (0,5,Sec)
+      k = 1
+      SubScan(0,uSec,9)
+        SDI12Recorder (Hydra(k,1),5,k,"M!",1.0,0) 'read 9 soil parameters
+        'reassign things to more useful variables
+        Hydra_moisture(k) = Hydra(k,1)
+        Hydra_temp(k) = Hydra(k,3)
+        Hydra_cond(k) = Hydra(k,5)
+        Hydra_real_perm(k) = Hydra(k,6)
+        Hydra_img_perm(k) = Hydra(k,7)
+        k = k+1
+      NextSubScan
+      PortSet(6,0)  'power off
+    EndIf
+
+    '''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''
+    '' Output to Storage  '''''''
+    '''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''
+    CallTable site_data
+    CallTable Snow
+    CallTable Diagnostic
+    
+  NextScan
+EndProg
