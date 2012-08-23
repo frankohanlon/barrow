@@ -260,6 +260,8 @@ Alias Thermistors_Mux2( 30) = Pit_3_Thermistor_3
     Units Thermistors_Mux1 = Degrees Celsius
     Units Thermistors_Mux2 = Degrees Celsius
     Units AirTemp = Degrees Celsius    
+    ' Could optionally add units for the HFP and HydraProbes.
+    
 '''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''
 '' Define Data Output Tables ''
@@ -317,7 +319,7 @@ BeginProg
   '' Initiazlize All of the offest parameters  '''''''
   ''''''''''''''''''''''''''''''''''''''''''''''''''''
   ''''''''''''''''''''''''''''''''''''''''''''''''''''
-
+  Signature
   ' Snow
   SR50A_height_1 = 120  ' units are centimeters
   SR50A_height_2 = 120  ' units are centimeters
@@ -429,14 +431,6 @@ BeginProg
   
   
   Scan(10,Sec, 10, 0)
-    '''''''''''''''''''''''''''''''''
-    '''''''''''''''''''''''''''''''''
-    '' Diagnostic Measurements  '''''
-    '''''''''''''''''''''''''''''''''
-    '''''''''''''''''''''''''''''''''    
-    Battery(batt_volt)
-    PanelTemp(Ptemp,_60Hz)
-    p_sig = Signature
 
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -530,6 +524,15 @@ BeginProg
       NextSubScan
       PortSet(6,0)  'power off
     EndIf
+
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''
+    '' Diagnostic Measurements  '''''
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''    
+    Battery(batt_volt)
+    PanelTemp(Ptemp,_60Hz)
+    p_sig = Signature
 
     '''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''
