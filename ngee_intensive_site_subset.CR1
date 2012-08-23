@@ -233,6 +233,9 @@ Alias Thermistors_Mux2( 28) = Pit_3_Thermistor_1
 Alias Thermistors_Mux2( 29) = Pit_3_Thermistor_2
 Alias Thermistors_Mux2( 30) = Pit_3_Thermistor_3
 
+Alias shf(1) = Pit_1_HeatFlux
+Alias shf(2) = Pit_2_HeatFlux
+Alias shf(3) = Pit_3_HeatFlux
 
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
@@ -259,8 +262,9 @@ Alias Thermistors_Mux2( 30) = Pit_3_Thermistor_3
     Units SnowDepth_1 = Centimeters    
     Units Thermistors_Mux1 = Degrees Celsius
     Units Thermistors_Mux2 = Degrees Celsius
-    Units AirTemp = Degrees Celsius    
-    ' Could optionally add units for the HFP and HydraProbes.
+    Units AirTemp = Degrees Celsius   
+    Units shf = Watts / meter^2 
+    ' Could optionally add units for the HydraProbes.
     
 '''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''
@@ -278,10 +282,9 @@ Alias Thermistors_Mux2( 30) = Pit_3_Thermistor_3
     EndTable
     
     DataTable(site_data,true,-1)
-      DataInterval(0,5,Min,10)
+      DataInterval(0,60,Min,10)
       Minimum(1,batt_volt,FP2,False,False)
-      Average(1,Ptemp,FP2, 0)
-      Sample(1,p_sig,IEEE4)      
+      Average(1,Ptemp,FP2, 0)      
       ' Thermistors
       Average(64,Thermistors_Mux1(),FP2,False)   
       Average(30,Thermistors_Mux2(),FP2,False)     
@@ -430,14 +433,14 @@ BeginProg
 
   
   
-  Scan(10,Sec, 10, 0)
+  Scan(60,Sec, 10, 0)
 
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '' Measure Thermistor Probes on Multiplexer #1 ''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''   
-    If Timeintointerval (0,5,Min) Then
+    If TimeIntoInterval (0,10,Min) Then
       PortSet(2,1)  'Multiplexer #1 ON
       i = 1
       SubScan(0,uSec,32)
@@ -459,7 +462,7 @@ BeginProg
     '' Measure Thermistor Probes on Multiplexer #2 ''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''        
-    If TimeIntoInterval (0,5,Min) Then
+    If TimeIntoInterval (0,10,Min) Then
       PortSet(3,1)  'Multiplexer #2 ON
       i = 1
       SubScan(0,uSec,15)
