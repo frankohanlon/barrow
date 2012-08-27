@@ -16,13 +16,14 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' 3 -- HFP01 Heat Flux Plates
 ' 9 -- Vitel HydraProbe II Probes
-' 9 -- East30 Sensors Thermal Conductivity Probes [Not yet added]
+' 6 -- East30 Sensors Thermal Conductivity Probes 
 ' 5 -- 16 point thermistor strings
 ' 9 -- thermistors to be installed adjacent to the soil moisture probes
 ' 1 -- 5 point shallow borehole 
 ' 1 -- 107 Air Temperature
 ' 1 or 2 -- SR50A Snow Depth
-' 3 -- HFP01 Heat Flux Sensors
+
+
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -61,7 +62,7 @@
 ' C5 -- SDI 12 Devices Part 1 (9 Vitel Probes )
 ' C6 -- Vitel Probe CONTROL
 ' C7 -- SDI 12 Devices Part 2 (1 or 2 SR50A ) (Green Wire)
-' C8 -- 
+' C8 -- Thermal Conductivity Control
 ' SW12V -- Radio Power
 
 ' Signal Ground -- HFP01 Shields (Clear Wire), 107 Probe SG (Purple Wire), SR50A 
@@ -93,6 +94,13 @@
 ' Black Wire -- CR1000 Ground
 ' Blue Wire -- CR1000 C5
 
+' East30 Thermal Conductivity Sensors
+' Purple Wire -- AM16/32B #2 Odd group HI
+' Red Wire -- AM16/32B #2 Odd group LO
+' Blue Wire -- AM16/32B #2 Even Group HI
+' Gray Wire -- AM16/32B #2 Even Group LO, jumper to Signal Ground
+' Black Wire -- Current Excitation Module (one per channel)
+
 
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
@@ -103,6 +111,7 @@
     Public batt_volt
     Public Ptemp
     Public p_sig    
+    Public Flag(8) As Boolean
     
     ''' Thermistor Related Variables
     Public Thermistors_Mux1(64), Thermistors_offset_Mux1(64)   ' thermistors on AM16/32B #1
@@ -121,8 +130,28 @@
     ''' Heat Flux
     Public shf(3)
     
+    ''' Thermal Conductivity    
+    Public generator
+    Public expgener
+    Public sum
+    Public tc
+    Public Vref
+    Public sqVref
+    Public Tinitial(6)
+    Public Theat(6)
+    Public time (6)
+    Public Trise (6)
+    Public power(6)
+    Public heater(6)
+    
     ''' Extras
     Dim i,j,k 
+    Public muxincr
+    Public i1
+    Public i2
+    
+
+    
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
 '' Aliases  ''''''''''''''''''
@@ -309,6 +338,11 @@ Alias shf(3) = Pit_3_HeatFlux
       Sample (1,Distance_2,FP2)
     EndTable
     
+    DataTable(TableTC,true,-1)
+      Sample(6, time,IEEE4)
+      Sample(6, Trise, FP2)
+      Sample(6, power, FP2)
+    EndTable
     
 '''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -431,7 +465,12 @@ BeginProg
   Thermistors_offset_Mux2 ( 29 ) = 0.0   '' Pit 3 Thermistor _2 _
   Thermistors_offset_Mux2 ( 30 ) = 0.0   '' Pit 3 Thermistor _3 _
 
-  
+  heater(1) = 1041.5  '' East 30 Pit 1 - Heater #1 Resistance
+  heater(2) = 1041.5  '' East 30 Pit 1 - Heater #2 Resistance
+  heater(3) = 1041.5  '' East 30 Pit 1 - Heater #3 Resistance
+  heater(4) = 1041.5  '' East 30 Pit 2 - Heater #1 Resistance
+  heater(5) = 1041.5  '' East 30 Pit 2 - Heater #2 Resistance
+  heater(6) = 1041.5  '' East 30 Pit 2 - Heater #3 Resistance
   
   Scan(60,Sec, 10, 0)
 
@@ -465,6 +504,10 @@ BeginProg
     If TimeIntoInterval (0,10,Min) Then
       PortSet(3,1)  'Multiplexer #2 ON
       i = 1
+      SubScan(0,uSec,12)
+        ' Loop through the Thermal Conductivity Probes
+        PulsePort(1,10000)
+      NextSubScan
       SubScan(0,uSec,15)
         PulsePort(1,10000)
         BrHalf (TP_ratio, 1, mV2500, 15, Vx3, 1, 2500, False, 0, 250,1.0,0)
@@ -537,6 +580,67 @@ BeginProg
     PanelTemp(Ptemp,_60Hz)
     p_sig = Signature
 
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''' Measure the Thermal Conductivity Sensors  '''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    generator = 0
+    sum = 0
+    tc = 0
+    If  TimeIntoInterval(0,20,Min) Then Flag(1) = True         
+    If flag(1) = True Then    
+      generator = 1
+      sum = 2.72
+      tc = 1
+      ' steady state, iniital measurments
+      PortSet (3,1)
+      SubScan(0,Sec,6)
+        PulsePort (2, 10000)      
+        TCDiff(Tinitial(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
+        PulsePort (2, 10000)
+        tc = tc + 1
+      NextSubScan
+      PortSet (3,0)
+      ' start the measurement timers
+      Timer(0,Sec,2) 
+      PortSet (1,1)
+      For i1 = 1 To 36  
+        'Delay (0,1,Sec)                    
+        generator = generator + 0.1
+        expgener = EXP(generator)
+        ' little delay routine 
+        For i2 = 1 To 200 
+          Delay (0,700,mSec)              
+          sum = sum + 0.5
+          If (sum >= expgener) Then      ExitFor       
+        Next i2  
+        tc = 1
+        muxincr = 1
+        ' loop through the sensors
+        PortSet(3,1)
+        SubScan(0,Sec,12)
+          PulsePort(2,10000)
+          TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
+          PulsePort(2,10000)
+          VoltDiff(Vref, 1, mV250,8, True, 0, 250, 0.001, 0)  
+          time(tc) = Timer(0,mSec,4) /1000
+          Trise(tc) = Theat(tc) - Tinitial(tc)
+          sqVref = Vref * Vref
+          power (tc) = sqVref * heater(tc)
+          tc = tc + 1
+        NextSubScan
+        PortSet(3,0)      
+        CallTable TableTC
+      Next i1
+      ' turn off current excitation
+      PortSet(1,0)    
+      ' end of measurment
+      Flag(1) = False      
+    EndIf
+    
+    
+            
     '''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''
     '' Output to Storage  '''''''
