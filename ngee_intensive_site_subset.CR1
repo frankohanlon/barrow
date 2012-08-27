@@ -55,12 +55,12 @@
 ' P1 -- 
 ' P2 -- 
 
-' C1 -- AM16/32B #1 & 2 -- CLK
+' C1 -- 
 ' C2 -- AM16/32B #1 -- RES
 ' C3 -- AM16/32B #2 -- RES
-' C4 -- 
-' C5 -- SDI 12 Devices Part 1 (9 Vitel Probes )
-' C6 -- Vitel Probe CONTROL
+' C4 -- AM16/32B #1 & 2 -- CLK
+' C5 -- SDI 12 Devices Part 1 (9 Vitel Probes ) (Blue Wire)
+' C6 -- Vitel Probe CONTROL (Run to SW12V Control for Vitel Probes)
 ' C7 -- SDI 12 Devices Part 2 (1 or 2 SR50A ) (Green Wire)
 ' C8 -- Thermal Conductivity Control
 ' SW12V -- Radio Power
@@ -90,9 +90,10 @@
 ' Clear Wire -- CR1000 Ground
 
 ' HydraProbe II
-' Red Wire -- CR1000 +12V
+' Red Wire -- SW12V dongle +12V
 ' Black Wire -- CR1000 Ground
 ' Blue Wire -- CR1000 C5
+' SW12V for this sensor should be wired into C6
 
 ' East30 Thermal Conductivity Sensors
 ' Purple Wire -- AM16/32B #2 Odd group HI
@@ -100,6 +101,43 @@
 ' Blue Wire -- AM16/32B #2 Even Group HI
 ' Gray Wire -- AM16/32B #2 Even Group LO, jumper to Signal Ground
 ' Black Wire -- Current Excitation Module (one per channel)
+
+' AM16/32B #1 in 2/32 Mode
+' RES - CR1000 C2
+' CLK - CR1000 C1
+' 12V  - CR1000 12V
+' G    - CR1000 G
+' COM ODD HI - CR1000 SE13,  Precision Resistor to CR1000 VX2
+' COM ODD LO - CR1000 SE14,  Precision Resistor to CR1000 VX2
+' AM16/32B GROUPS 1 - 8   -- Deep Thermistor Probe 1
+' AM16/32B GROUPS 9 - 16  -- Deep Thermistor Probe 2
+' AM16/32B GROUPS 17 - 24 -- Deep Thermistor Probe 3
+' AM16/32B GROUPS 25 - 32 -- Deep Thermistor Probe 4
+
+' AM16/32B #2 in 2/32 Mode
+' RES - CR1000 C3
+' CLK - CR1000 C1
+' 12V  - CR1000 12V
+' G    - CR1000 G
+' COM ODD HI - CR1000 SE15,  Precision Resistor to CR1000 VX3
+' COM ODD LO - CR1000 SE16,  Precision Resistor to CR1000 VX3
+' AM16/32B GROUP 1 & 2     -- Thermal Conductivity Pit 1 Probe 1
+' AM16/32B GROUP 3 & 4     -- Thermal Conductivity Pit 1 Probe 2
+' AM16/32B GROUP 5 & 6     -- Thermal Conductivity Pit 1 Probe 3
+' AM16/32B GROUP 7 & 8     -- Thermal Conductivity Pit 2 Probe 1
+' AM16/32B GROUP 9 & 10    -- Thermal Conductivity Pit 2 Probe 2
+' AM16/32B GROUP 11 & 12   -- Thermal Conductivity Pit 2 Probe 3
+' AM16/32B GROUP 13 - 20   -- Deep Thermistor Probe 5
+' AM16/32B GROUP 21 - 23.1 -- Shallow Thermistor Probe
+' AM16/32B GROUP 23.2      -- Pit 1 Thermistor 1
+' AM16/32B Group 24.1      -- Pit 1 Thermistor 2
+' AM16/32B Group 24.2      -- Pit 1 Thermistor 3
+' AM16/32B Group 25.1      -- Pit 2 Thermistor 1
+' AM16/32B Group 25.2      -- Pit 2 Thermistor 2
+' AM16/32B Group 26.1      -- Pit 2 Thermistor 3
+' AM16/32B Group 26.2      -- Pit 3 Thermistor 1
+' AM16/32B Group 27.1      -- Pit 3 Thermistor 2
+' AM16/32B Group 27.2      -- Pit 3 Thermistor 3
 
 
 ''''''''''''''''''''''''''''''
@@ -112,6 +150,7 @@
     Public Ptemp
     Public p_sig    
     Public Flag(8) As Boolean
+    Public radioflag As Boolean  
     
     ''' Thermistor Related Variables
     Public Thermistors_Mux1(64), Thermistors_offset_Mux1(64)   ' thermistors on AM16/32B #1
@@ -143,7 +182,7 @@
     Public Trise (6)
     Public power(6)
     Public heater(6)
-    
+    Public measureTC As Boolean
     ''' Extras
     Dim i,j,k 
     Public muxincr
@@ -474,6 +513,44 @@ BeginProg
   
   Scan(60,Sec, 10, 0)
 
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''
+    '' Diagnostic Measurements  '''''
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''    
+    Battery(batt_volt)
+    PanelTemp(Ptemp,_60Hz)
+    p_sig = Signature
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '' Radio and Thermal Conducitivyt Control  '''''''''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+      ' if the battery voltage is high then turn the radio on hourly 
+      ' also allow the thermal conductivity sensors to be measured
+      If TimeIntoInterval(0,60,min) Then
+        If batt_volt >= 12.4 Then 
+          SW12(1)
+          measureTC = true
+        EndIf
+      EndIf
+      ' if the battery voltage isn't too low, turn the radio on daily.
+      If TimeIntoInterval(720,1440,min) Then
+        If batt_volt >= 12.2 Then 
+          SW12(1)
+          measureTC = true
+        EndIf
+      EndIf
+      ' if the radioflag hasn't been set manually then turn the radio off 10 minutes into the hour.
+      ' also flip the measureTC boolean 
+      If TimeIntoInterval(10,60,min) Then
+        If radioflag = false Then SW12(0)
+        measuretc = false
+      EndIf      
+      ' radioflag is used to leave the radio turned on all the time (typically used remotely)
+      If batt_volt < 12.6 Then radioflag = false
+      
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '' Measure Thermistor Probes on Multiplexer #1 ''''''
@@ -571,14 +648,6 @@ BeginProg
       PortSet(6,0)  'power off
     EndIf
 
-    '''''''''''''''''''''''''''''''''
-    '''''''''''''''''''''''''''''''''
-    '' Diagnostic Measurements  '''''
-    '''''''''''''''''''''''''''''''''
-    '''''''''''''''''''''''''''''''''    
-    Battery(batt_volt)
-    PanelTemp(Ptemp,_60Hz)
-    p_sig = Signature
 
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -588,7 +657,11 @@ BeginProg
     generator = 0
     sum = 0
     tc = 0
-    If  TimeIntoInterval(0,20,Min) Then Flag(1) = True         
+    If  TimeIntoInterval(0,60,Min) Then 
+      If measureTC = true Then
+        Flag(1) = True         
+      EndIf
+    EndIf  
     If flag(1) = True Then    
       generator = 1
       sum = 2.72
@@ -596,9 +669,9 @@ BeginProg
       ' steady state, iniital measurments
       PortSet (3,1)       ' turn on mux #2 & loop through the thermocouples
       SubScan(0,Sec,6)
-        PulsePort (1, 10000)      
+        PulsePort (4, 10000)      
         TCDiff(Tinitial(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
-        PulsePort (1, 10000)
+        PulsePort (4, 10000)
         tc = tc + 1
       NextSubScan
       PortSet (3,0)       ' turn off mux #2
@@ -618,9 +691,9 @@ BeginProg
         muxincr = 1
         PortSet(3,1)
         SubScan(0,Sec,12)
-          PulsePort(1,10000)
+          PulsePort(4,10000)
           TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
-          PulsePort(1,10000)
+          PulsePort(4,10000)
           VoltDiff(Vref, 1, mV250,8, True, 0, 250, 0.001, 0)  
           time(tc) = Timer(0,mSec,4) /1000
           Trise(tc) = Theat(tc) - Tinitial(tc)
@@ -628,11 +701,11 @@ BeginProg
           power (tc) = sqVref * heater(tc)
           tc = tc + 1
         NextSubScan
-        PortSet(8,0)      
+        PortSet(3,0)      
         CallTable TableTC
       Next i1
       ' turn off current excitation
-      PortSet(1,0)    
+      PortSet(8,0)    
       ' end of measurment
       Flag(1) = False      
     EndIf
