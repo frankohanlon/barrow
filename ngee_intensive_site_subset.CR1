@@ -594,35 +594,33 @@ BeginProg
       sum = 2.72
       tc = 1
       ' steady state, iniital measurments
-      PortSet (3,1)
+      PortSet (3,1)       ' turn on mux #2 & loop through the thermocouples
       SubScan(0,Sec,6)
-        PulsePort (2, 10000)      
+        PulsePort (1, 10000)      
         TCDiff(Tinitial(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
-        PulsePort (2, 10000)
+        PulsePort (1, 10000)
         tc = tc + 1
       NextSubScan
-      PortSet (3,0)
-      ' start the measurement timers
-      Timer(0,Sec,2) 
-      PortSet (1,1)
-      For i1 = 1 To 36  
-        'Delay (0,1,Sec)                    
+      PortSet (3,0)       ' turn off mux #2
+      Timer(0,Sec,2)      ' start the measurement timer
+      PortSet (8,1)       ' turn heaters on 
+      For i1 = 1 To 36                
         generator = generator + 0.1
         expgener = EXP(generator)
-        ' little delay routine 
+        ' an exponential delay algorithm 
         For i2 = 1 To 200 
           Delay (0,700,mSec)              
           sum = sum + 0.5
           If (sum >= expgener) Then      ExitFor       
         Next i2  
+        ' loop through the thermal conductivity probes
         tc = 1
         muxincr = 1
-        ' loop through the sensors
         PortSet(3,1)
         SubScan(0,Sec,12)
-          PulsePort(2,10000)
+          PulsePort(1,10000)
           TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
-          PulsePort(2,10000)
+          PulsePort(1,10000)
           VoltDiff(Vref, 1, mV250,8, True, 0, 250, 0.001, 0)  
           time(tc) = Timer(0,mSec,4) /1000
           Trise(tc) = Theat(tc) - Tinitial(tc)
@@ -630,7 +628,7 @@ BeginProg
           power (tc) = sqVref * heater(tc)
           tc = tc + 1
         NextSubScan
-        PortSet(3,0)      
+        PortSet(8,0)      
         CallTable TableTC
       Next i1
       ' turn off current excitation
