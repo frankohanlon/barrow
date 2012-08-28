@@ -206,91 +206,91 @@
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
 'Alias Thermisters_Mux1
-Alias Thermistors_Mux1( 1) = Bore_Hole_1_Thermistor_1
-Alias Thermistors_Mux1( 2) = Bore_Hole_1_Thermistor_2
-Alias Thermistors_Mux1( 3) = Bore_Hole_1_Thermistor_3
-Alias Thermistors_Mux1( 4) = Bore_Hole_1_Thermistor_4
-Alias Thermistors_Mux1( 5) = Bore_Hole_1_Thermistor_5
-Alias Thermistors_Mux1( 6) = Bore_Hole_1_Thermistor_6
-Alias Thermistors_Mux1( 7) = Bore_Hole_1_Thermistor_7
-Alias Thermistors_Mux1( 8) = Bore_Hole_1_Thermistor_8
-Alias Thermistors_Mux1( 9) = Bore_Hole_1_Thermistor_9
-Alias Thermistors_Mux1( 10) = Bore_Hole_1_Thermistor_10
-Alias Thermistors_Mux1( 11) = Bore_Hole_1_Thermistor_11
-Alias Thermistors_Mux1( 12) = Bore_Hole_1_Thermistor_12
-Alias Thermistors_Mux1( 13) = Bore_Hole_1_Thermistor_13
-Alias Thermistors_Mux1( 14) = Bore_Hole_1_Thermistor_14
-Alias Thermistors_Mux1( 15) = Bore_Hole_1_Thermistor_15
-Alias Thermistors_Mux1( 16) = Bore_Hole_1_Thermistor_16
+Alias Thermistors_Mux1( 1) = Deep_Probe_1_Thermistor_1
+Alias Thermistors_Mux1( 2) = Deep_Probe_1_Thermistor_2
+Alias Thermistors_Mux1( 3) = Deep_Probe_1_Thermistor_3
+Alias Thermistors_Mux1( 4) = Deep_Probe_1_Thermistor_4
+Alias Thermistors_Mux1( 5) = Deep_Probe_1_Thermistor_5
+Alias Thermistors_Mux1( 6) = Deep_Probe_1_Thermistor_6
+Alias Thermistors_Mux1( 7) = Deep_Probe_1_Thermistor_7
+Alias Thermistors_Mux1( 8) = Deep_Probe_1_Thermistor_8
+Alias Thermistors_Mux1( 9) = Deep_Probe_1_Thermistor_9
+Alias Thermistors_Mux1( 10) = Deep_Probe_1_Thermistor_10
+Alias Thermistors_Mux1( 11) = Deep_Probe_1_Thermistor_11
+Alias Thermistors_Mux1( 12) = Deep_Probe_1_Thermistor_12
+Alias Thermistors_Mux1( 13) = Deep_Probe_1_Thermistor_13
+Alias Thermistors_Mux1( 14) = Deep_Probe_1_Thermistor_14
+Alias Thermistors_Mux1( 15) = Deep_Probe_1_Thermistor_15
+Alias Thermistors_Mux1( 16) = Deep_Probe_1_Thermistor_16
 
-Alias Thermistors_Mux1( 17) = Bore_Hole_2_Thermistor_1
-Alias Thermistors_Mux1( 18) = Bore_Hole_2_Thermistor_2
-Alias Thermistors_Mux1( 19) = Bore_Hole_2_Thermistor_3
-Alias Thermistors_Mux1( 20) = Bore_Hole_2_Thermistor_4
-Alias Thermistors_Mux1( 21) = Bore_Hole_2_Thermistor_5
-Alias Thermistors_Mux1( 22) = Bore_Hole_2_Thermistor_6
-Alias Thermistors_Mux1( 23) = Bore_Hole_2_Thermistor_7
-Alias Thermistors_Mux1( 24) = Bore_Hole_2_Thermistor_8
-Alias Thermistors_Mux1( 25) = Bore_Hole_2_Thermistor_9
-Alias Thermistors_Mux1( 26) = Bore_Hole_2_Thermistor_10
-Alias Thermistors_Mux1( 27) = Bore_Hole_2_Thermistor_11
-Alias Thermistors_Mux1( 28) = Bore_Hole_2_Thermistor_12
-Alias Thermistors_Mux1( 29) = Bore_Hole_2_Thermistor_13
-Alias Thermistors_Mux1( 30) = Bore_Hole_2_Thermistor_14
-Alias Thermistors_Mux1( 31) = Bore_Hole_2_Thermistor_15
-Alias Thermistors_Mux1( 32) = Bore_Hole_2_Thermistor_16
+Alias Thermistors_Mux1( 17) = Deep_Probe_2_Thermistor_1
+Alias Thermistors_Mux1( 18) = Deep_Probe_2_Thermistor_2
+Alias Thermistors_Mux1( 19) = Deep_Probe_2_Thermistor_3
+Alias Thermistors_Mux1( 20) = Deep_Probe_2_Thermistor_4
+Alias Thermistors_Mux1( 21) = Deep_Probe_2_Thermistor_5
+Alias Thermistors_Mux1( 22) = Deep_Probe_2_Thermistor_6
+Alias Thermistors_Mux1( 23) = Deep_Probe_2_Thermistor_7
+Alias Thermistors_Mux1( 24) = Deep_Probe_2_Thermistor_8
+Alias Thermistors_Mux1( 25) = Deep_Probe_2_Thermistor_9
+Alias Thermistors_Mux1( 26) = Deep_Probe_2_Thermistor_10
+Alias Thermistors_Mux1( 27) = Deep_Probe_2_Thermistor_11
+Alias Thermistors_Mux1( 28) = Deep_Probe_2_Thermistor_12
+Alias Thermistors_Mux1( 29) = Deep_Probe_2_Thermistor_13
+Alias Thermistors_Mux1( 30) = Deep_Probe_2_Thermistor_14
+Alias Thermistors_Mux1( 31) = Deep_Probe_2_Thermistor_15
+Alias Thermistors_Mux1( 32) = Deep_Probe_2_Thermistor_16
 
-Alias Thermistors_Mux1( 33) = Bore_Hole_3_Thermistor_1
-Alias Thermistors_Mux1( 34) = Bore_Hole_3_Thermistor_2
-Alias Thermistors_Mux1( 35) = Bore_Hole_3_Thermistor_3
-Alias Thermistors_Mux1( 36) = Bore_Hole_3_Thermistor_4
-Alias Thermistors_Mux1( 37) = Bore_Hole_3_Thermistor_5
-Alias Thermistors_Mux1( 38) = Bore_Hole_3_Thermistor_6
-Alias Thermistors_Mux1( 39) = Bore_Hole_3_Thermistor_7
-Alias Thermistors_Mux1( 40) = Bore_Hole_3_Thermistor_8
-Alias Thermistors_Mux1( 41) = Bore_Hole_3_Thermistor_9
-Alias Thermistors_Mux1( 42) = Bore_Hole_3_Thermistor_10
-Alias Thermistors_Mux1( 43) = Bore_Hole_3_Thermistor_11
-Alias Thermistors_Mux1( 44) = Bore_Hole_3_Thermistor_12
-Alias Thermistors_Mux1( 45) = Bore_Hole_3_Thermistor_13
-Alias Thermistors_Mux1( 46) = Bore_Hole_3_Thermistor_14
-Alias Thermistors_Mux1( 47) = Bore_Hole_3_Thermistor_15
-Alias Thermistors_Mux1( 48) = Bore_Hole_3_Thermistor_16
+Alias Thermistors_Mux1( 33) = Deep_Probe_3_Thermistor_1
+Alias Thermistors_Mux1( 34) = Deep_Probe_3_Thermistor_2
+Alias Thermistors_Mux1( 35) = Deep_Probe_3_Thermistor_3
+Alias Thermistors_Mux1( 36) = Deep_Probe_3_Thermistor_4
+Alias Thermistors_Mux1( 37) = Deep_Probe_3_Thermistor_5
+Alias Thermistors_Mux1( 38) = Deep_Probe_3_Thermistor_6
+Alias Thermistors_Mux1( 39) = Deep_Probe_3_Thermistor_7
+Alias Thermistors_Mux1( 40) = Deep_Probe_3_Thermistor_8
+Alias Thermistors_Mux1( 41) = Deep_Probe_3_Thermistor_9
+Alias Thermistors_Mux1( 42) = Deep_Probe_3_Thermistor_10
+Alias Thermistors_Mux1( 43) = Deep_Probe_3_Thermistor_11
+Alias Thermistors_Mux1( 44) = Deep_Probe_3_Thermistor_12
+Alias Thermistors_Mux1( 45) = Deep_Probe_3_Thermistor_13
+Alias Thermistors_Mux1( 46) = Deep_Probe_3_Thermistor_14
+Alias Thermistors_Mux1( 47) = Deep_Probe_3_Thermistor_15
+Alias Thermistors_Mux1( 48) = Deep_Probe_3_Thermistor_16
 
-Alias Thermistors_Mux1( 49) = Bore_Hole_4_Thermistor_1
-Alias Thermistors_Mux1( 50) = Bore_Hole_4_Thermistor_2
-Alias Thermistors_Mux1( 51) = Bore_Hole_4_Thermistor_3
-Alias Thermistors_Mux1( 52) = Bore_Hole_4_Thermistor_4
-Alias Thermistors_Mux1( 53) = Bore_Hole_4_Thermistor_5
-Alias Thermistors_Mux1( 54) = Bore_Hole_4_Thermistor_6
-Alias Thermistors_Mux1( 55) = Bore_Hole_4_Thermistor_7
-Alias Thermistors_Mux1( 56) = Bore_Hole_4_Thermistor_8
-Alias Thermistors_Mux1( 57) = Bore_Hole_4_Thermistor_9
-Alias Thermistors_Mux1( 58) = Bore_Hole_4_Thermistor_10
-Alias Thermistors_Mux1( 59) = Bore_Hole_4_Thermistor_11
-Alias Thermistors_Mux1( 60) = Bore_Hole_4_Thermistor_12
-Alias Thermistors_Mux1( 61) = Bore_Hole_4_Thermistor_13
-Alias Thermistors_Mux1( 62) = Bore_Hole_4_Thermistor_14
-Alias Thermistors_Mux1( 63) = Bore_Hole_4_Thermistor_15
-Alias Thermistors_Mux1( 64) = Bore_Hole_4_Thermistor_16
+Alias Thermistors_Mux1( 49) = Deep_Probe_4_Thermistor_1
+Alias Thermistors_Mux1( 50) = Deep_Probe_4_Thermistor_2
+Alias Thermistors_Mux1( 51) = Deep_Probe_4_Thermistor_3
+Alias Thermistors_Mux1( 52) = Deep_Probe_4_Thermistor_4
+Alias Thermistors_Mux1( 53) = Deep_Probe_4_Thermistor_5
+Alias Thermistors_Mux1( 54) = Deep_Probe_4_Thermistor_6
+Alias Thermistors_Mux1( 55) = Deep_Probe_4_Thermistor_7
+Alias Thermistors_Mux1( 56) = Deep_Probe_4_Thermistor_8
+Alias Thermistors_Mux1( 57) = Deep_Probe_4_Thermistor_9
+Alias Thermistors_Mux1( 58) = Deep_Probe_4_Thermistor_10
+Alias Thermistors_Mux1( 59) = Deep_Probe_4_Thermistor_11
+Alias Thermistors_Mux1( 60) = Deep_Probe_4_Thermistor_12
+Alias Thermistors_Mux1( 61) = Deep_Probe_4_Thermistor_13
+Alias Thermistors_Mux1( 62) = Deep_Probe_4_Thermistor_14
+Alias Thermistors_Mux1( 63) = Deep_Probe_4_Thermistor_15
+Alias Thermistors_Mux1( 64) = Deep_Probe_4_Thermistor_16
 
 'Alias Thermisters_Mux2
-Alias Thermistors_Mux2( 1) = Bore_Hole_5_Thermistor_1
-Alias Thermistors_Mux2( 2) = Bore_Hole_5_Thermistor_2
-Alias Thermistors_Mux2( 3) = Bore_Hole_5_Thermistor_3
-Alias Thermistors_Mux2( 4) = Bore_Hole_5_Thermistor_4
-Alias Thermistors_Mux2( 5) = Bore_Hole_5_Thermistor_5
-Alias Thermistors_Mux2( 6) = Bore_Hole_5_Thermistor_6
-Alias Thermistors_Mux2( 7) = Bore_Hole_5_Thermistor_7
-Alias Thermistors_Mux2( 8) = Bore_Hole_5_Thermistor_8
-Alias Thermistors_Mux2( 9) = Bore_Hole_5_Thermistor_9
-Alias Thermistors_Mux2( 10) = Bore_Hole_5_Thermistor_10
-Alias Thermistors_Mux2( 11) = Bore_Hole_5_Thermistor_11
-Alias Thermistors_Mux2( 12) = Bore_Hole_5_Thermistor_12
-Alias Thermistors_Mux2( 13) = Bore_Hole_5_Thermistor_13
-Alias Thermistors_Mux2( 14) = Bore_Hole_5_Thermistor_14
-Alias Thermistors_Mux2( 15) = Bore_Hole_5_Thermistor_15
-Alias Thermistors_Mux2( 16) = Bore_Hole_5_Thermistor_16
+Alias Thermistors_Mux2( 1) = Deep_Probe_5_Thermistor_1
+Alias Thermistors_Mux2( 2) = Deep_Probe_5_Thermistor_2
+Alias Thermistors_Mux2( 3) = Deep_Probe_5_Thermistor_3
+Alias Thermistors_Mux2( 4) = Deep_Probe_5_Thermistor_4
+Alias Thermistors_Mux2( 5) = Deep_Probe_5_Thermistor_5
+Alias Thermistors_Mux2( 6) = Deep_Probe_5_Thermistor_6
+Alias Thermistors_Mux2( 7) = Deep_Probe_5_Thermistor_7
+Alias Thermistors_Mux2( 8) = Deep_Probe_5_Thermistor_8
+Alias Thermistors_Mux2( 9) = Deep_Probe_5_Thermistor_9
+Alias Thermistors_Mux2( 10) = Deep_Probe_5_Thermistor_10
+Alias Thermistors_Mux2( 11) = Deep_Probe_5_Thermistor_11
+Alias Thermistors_Mux2( 12) = Deep_Probe_5_Thermistor_12
+Alias Thermistors_Mux2( 13) = Deep_Probe_5_Thermistor_13
+Alias Thermistors_Mux2( 14) = Deep_Probe_5_Thermistor_14
+Alias Thermistors_Mux2( 15) = Deep_Probe_5_Thermistor_15
+Alias Thermistors_Mux2( 16) = Deep_Probe_5_Thermistor_16
 
 Alias Thermistors_Mux2( 17) = Shallow_Hole_Thermistor_1
 Alias Thermistors_Mux2( 18) = Shallow_Hole_Thermistor_2
@@ -358,7 +358,7 @@ Alias shf(3) = Pit_3_HeatFlux
       Sample (1,p_sig,IEEE4)        
     EndTable
     
-    DataTable(site_data,true,-1)
+    DataTable(Subsurface,true,-1)
       DataInterval(0,60,Min,10)
       Minimum(1,batt_volt,FP2,False,False)
       Average(1,Ptemp,FP2, 0)      
@@ -379,6 +379,7 @@ Alias shf(3) = Pit_3_HeatFlux
       'soil heat flux plate
       Average(3,shf(),FP2,0) 
       ' snow 
+      Average(1,AirTemp,fp2,false)
       Sample(1,SnowDepth_1,FP2)
       Sample(1,SnowDepth_2,FP2)      
     EndTable
@@ -625,6 +626,7 @@ BeginProg
       NextSubScan
       SubScan(0,sec,3)        
         VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
+        i = i + 1
       NextSubScan
       PortSet(3,0)
       ' Convert mV to W/m^2
@@ -720,7 +722,7 @@ BeginProg
         ' loop through the thermal conductivity probes
         tc = 1
         muxincr = 1
-        PortSet(3,1)
+        PortSet(3,1)  
         SubScan(0,Sec,12)
           PulsePort(4,10000)
           TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
@@ -749,7 +751,7 @@ BeginProg
     '' Output to Storage  '''''''
     '''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''
-    CallTable site_data
+    CallTable Subsurface
     CallTable Snow
     CallTable Diagnostic
     
