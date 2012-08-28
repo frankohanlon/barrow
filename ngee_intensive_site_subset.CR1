@@ -160,11 +160,17 @@
     ''' Vitel Probes
     Public Hydra(9,9) '9 parameters from the Hydra Probe's II
     Public Hydra_moisture(9), Hydra_temp(9), Hydra_cond(9), Hydra_real_perm(9), Hydra_img_perm(9)
-
+    Public HydraRaw(9,5) ' The voltage values
+    Public HydraA(9)   ' Voltage A
+    Public HydraB(9)   ' Voltage B
+    Public HydraC(9)   ' Voltage C
+    Public HydraD(9)   ' Voltage D
+    Public HydraE(9)   ' Voltage E
     ''' Snow Related
     Public Raw_Dist_1, Distance_1, SnowDepth_1, SR50A_height_1
     Public Raw_Dist_2, Distance_2, SnowDepth_2, SR50A_height_2
     Public AirTemp
+    Public hTime
     
     ''' Heat Flux
     Public shf(3)
@@ -183,6 +189,7 @@
     Public power(6)
     Public heater(6)
     Public measureTC As Boolean
+
     ''' Extras
     Dim i,j,k 
     Public muxincr
@@ -362,6 +369,11 @@ Alias shf(3) = Pit_3_HeatFlux
       Sample(9,Hydra_cond(),FP2)  'soil conductivity, Siemens / Meter
       Sample(9,Hydra_real_perm(),FP2)  'real dielectric permittivity
       Sample(9,Hydra_img_perm(),FP2)  'imaginary dielectric permittivity
+      Sample(9,HydraA(),FP2)   ' Hydra Probe Voltage A
+      Sample(9,HydraB(),FP2)   ' Hydra Probe Voltage B
+      Sample(9,HydraC(),FP2)   ' Hydra Probe Voltage C
+      Sample(9,HydraD(),FP2)   ' Hydra Probe Voltage D
+      Sample(9,HydraE(),FP2)   ' Hydra Probe Voltage E                        
       'soil heat flux plate
       Average(3,shf(),FP2,0) 
       ' snow 
@@ -524,7 +536,7 @@ BeginProg
 
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
-    '' Radio and Thermal Conducitivyt Control  '''''''''
+    '' Radio and Thermal Conducitivity Control  ''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
       ' if the battery voltage is high then turn the radio on hourly 
@@ -632,20 +644,28 @@ BeginProg
     ''''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''''    
     If  TimeIntoInterval(0,30,Min) Then
+      Timer(1,msec,2)
       PortSet(6,1)
       Delay (0,5,Sec)
       k = 1
       SubScan(0,uSec,9)
         SDI12Recorder (Hydra(k,1),5,k,"M!",1.0,0) 'read 9 soil parameters
+        SDI12Recorder (HydraRaw(k,1),5,k,"M4!",1.0,0) 'read 9 soil parameters
         'reassign things to more useful variables
         Hydra_moisture(k) = Hydra(k,1)
         Hydra_temp(k) = Hydra(k,3)
         Hydra_cond(k) = Hydra(k,5)
         Hydra_real_perm(k) = Hydra(k,6)
         Hydra_img_perm(k) = Hydra(k,7)
+        HydraA(k) = HydraRaw(k,1)
+        HydraB(k) = HydraRaw(k,2)
+        HydraC(k) = HydraRaw(k,3)
+        HydraD(k) = HydraRaw(k,4)
+        HydraE(k) = HydraRaw(k,5)
         k = k+1
       NextSubScan
       PortSet(6,0)  'power off
+      HTime = Timer(1,msec,4) / 1000
     EndIf
 
 
