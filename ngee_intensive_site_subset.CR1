@@ -31,12 +31,12 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-' SE1  -- HFP01 #1 HI (White Wire)
-' SE2  -- HFP01 #1 LO (Green Wire)
-' SE3  -- HFP01 #2 HI (White Wire)
-' SE4  -- HFP01 #2 LO (Green Wire)
-' SE5  -- HFP01 #3 HI (White Wire)
-' SE6  -- HFP01 #3 LO (Green Wire)
+' SE1  -- 
+' SE2  -- 
+' SE3  -- 
+' SE4  -- 
+' SE5  -- 
+' SE6  -- 
 ' SE7  --
 ' SE8  -- 107 Probe Signal (Red Wire)
 ' SE9  -- 
@@ -78,9 +78,9 @@
 ' Clear Wire -- CR1000 Signal Ground
 
 ' HFP01
-' White Wire -- CR1000 SE1, 3, or 5
-' Green Wire -- CR1000 SE2, 4, or 6
-' Clear Wire -- CR1000 Signal Ground
+' White Wire -- AM16/32B HI  28 to 30
+' Green Wire -- AM16/32B LO  28 to 30
+' Clear Wire -- AM16/32B Signal Ground
 
 ' SR50A
 ' Black Wire -- CR1000 Power Ground
@@ -138,7 +138,9 @@
 ' AM16/32B Group 26.2      -- Pit 3 Thermistor 1
 ' AM16/32B Group 27.1      -- Pit 3 Thermistor 2
 ' AM16/32B Group 27.2      -- Pit 3 Thermistor 3
-
+' AM16/32B Group 28        -- HFP01 Pit 1 
+' AM16/32B Group 29        -- HFP01 Pit 2
+' AM16/32B Group 30        -- HFP01 Pit 3
 
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
@@ -558,7 +560,6 @@ BeginProg
       ' also flip the measureTC boolean 
       If TimeIntoInterval(10,60,min) Then
         If radioflag = false Then SW12(0)
-        measuretc = false
       EndIf      
       ' radioflag is used to leave the radio turned on all the time (typically used remotely)
       If batt_volt < 12.6 Then radioflag = false
@@ -615,12 +616,22 @@ BeginProg
     '' Measure the Heat Flux Plate HFP01   ''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''    
-    VoltDiff(shf(1),3,mV25C,1,True,200,250,1,0)
-    ' Convert mV to W/m^2
-    shf(1) = shf(1) * HFP01_cal_1
-    shf(2) = shf(2) * HFP01_cal_2
-    shf(3) = shf(3) * HFP01_cal_3
-        
+    If TimeIntoInterval(0,10,min) Then
+      PortSet(3,1)
+      i = 1
+      SubScan(0,usec,27)
+        'loop through the thermal conductivity probes and thermistors
+        PulsePort(1,10000)
+      NextSubScan
+      SubScan(0,sec,3)        
+        VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
+      NextSubScan
+      PortSet(3,0)
+      ' Convert mV to W/m^2
+      shf(1) = shf(1) * HFP01_cal_1
+      shf(2) = shf(2) * HFP01_cal_2
+      shf(3) = shf(3) * HFP01_cal_3
+    EndIf        
     '''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''
     '' Measure the SR50a snow sensor(s)  ''''
@@ -727,7 +738,8 @@ BeginProg
       ' turn off current excitation
       PortSet(8,0)    
       ' end of measurment
-      Flag(1) = False      
+      Flag(1) = False    
+      measureTC = false  
     EndIf
     
     
