@@ -153,6 +153,7 @@
     Public p_sig    
     Public Flag(8) As Boolean
     Public radioflag As Boolean  
+    Public commscomplete As Boolean
     
     ''' Thermistor Related Variables
     Public Thermistors_Mux1(64), Thermistors_offset_Mux1(64)   ' thermistors on AM16/32B #1
@@ -414,6 +415,7 @@ BeginProg
   ' Snow
   SR50A_height_1 = 120  ' units are centimeters
   SR50A_height_2 = 120  ' units are centimeters
+  commscomplete = false
   
   ' Thermistor offsets  
   Thermistors_offset_Mux1 ( 1  ) = 0.0   '' Bore Hole - 1 Thermistor _1_
@@ -558,9 +560,11 @@ BeginProg
         EndIf
       EndIf
       ' if the radioflag hasn't been set manually then turn the radio off 10 minutes into the hour.
-      ' also flip the measureTC boolean 
-      If TimeIntoInterval(10,60,min) Then
-        If radioflag = false Then SW12(0)
+      If TimeIntoInterval(10,60,min) OR commscomplete = true Then
+        If radioflag = false Then 
+          SW12(0)
+          commscomplete = false
+        EndIf
       EndIf      
       ' radioflag is used to leave the radio turned on all the time (typically used remotely)
       If batt_volt < 12.6 Then radioflag = false
@@ -574,7 +578,7 @@ BeginProg
       PortSet(2,1)  'Multiplexer #1 ON
       i = 1
       SubScan(0,uSec,32)
-        PulsePort(1,10000)
+        PulsePort(4,10000)
         BrHalf (TP_ratio, 1, mV2500, 13, Vx2, 1, 2500, False, 0, 250,1.0,0)
         TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
         Thermistors_Mux1(i) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i)  'calculate temperature with correction for zero offset
@@ -597,10 +601,10 @@ BeginProg
       i = 1
       SubScan(0,uSec,12)
         ' Loop through the Thermal Conductivity Probes
-        PulsePort(1,10000)
+        PulsePort(4,10000)
       NextSubScan
       SubScan(0,uSec,15)
-        PulsePort(1,10000)
+        PulsePort(4,10000)
         BrHalf (TP_ratio, 1, mV2500, 15, Vx3, 1, 2500, False, 0, 250,1.0,0)
         TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
         Thermistors_Mux2(i) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux2(i)  'calculate temperature with correction for zero offset
