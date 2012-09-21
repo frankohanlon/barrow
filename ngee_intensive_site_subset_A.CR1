@@ -1,12 +1,12 @@
 'CR1000 Series Datalogger
 ' Bob Busey & Bill Cable for:
-' NGEE Barrow Intensive Sites
+' NGEE Barrow Intensive Site ________A________
 ' This program is just the Fall 2012 program
 ' I'll do a second one once we get the full complement of instrumentation in.  
 ' The wiring will need to change some.
-' Draft V1.0
+' Draft V1.1
 ' Creation Dates: 2012-08-16
-' Modified: 
+' Modified: 2012-09-20
 
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -59,7 +59,7 @@
 ' C2 -- AM16/32B #1 -- RES
 ' C3 -- AM16/32B #2 -- RES
 ' C4 -- AM16/32B #1 & 2 -- CLK
-' C5 -- SDI 12 Devices Part 1 (9 Vitel Probes ) (Blue Wire)
+' C5 -- SDI 12 Devices Part 1 (6 Vitel Probes ) (Blue Wire)
 ' C6 -- Vitel Probe CONTROL (Run to SW12V Control for Vitel Probes)
 ' C7 -- SDI 12 Devices Part 2 (1 or 2 SR50A ) (Green Wire)
 ' C8 -- Thermal Conductivity Control
@@ -71,6 +71,42 @@
 ''   Sensor Wiring   ''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Thermistor Probes
+'therm  depth  wire color
+'  1     2       blue
+'  2     5       white
+'  3     10      orange
+'  4     15      white
+'  5     20      green
+'  6     25      white
+'  7     30      brown
+'  8     35      white
+'  9     40      slate
+'  10    50      white
+'  11    60      blue
+'  12    70      red
+'  13    80      orange
+'  14    100     red
+'  15    125     green
+'  16    150     red
+' signal ground  black & black
+
+' Shallow Borehole
+'therm  depth  wire color
+'  1      2.0    blue
+'  2      2.5    orange
+'  3      3.0    green
+'  4      3.5    white
+'  5      4.0    red
+' signal ground black
+
+' Soil Pit Thermistor Triples
+' therm  wire color
+'  1        white
+'  2        red
+'  3        green
+' signal ground black
+ 
 ' 107 Probe
 ' Black Wire -- CR1000 VX1
 ' Red Wire  -- CR1000 SE8
@@ -109,10 +145,10 @@
 ' G    - CR1000 G
 ' COM ODD HI - CR1000 SE13,  Precision Resistor to CR1000 VX2
 ' COM ODD LO - CR1000 SE14,  Precision Resistor to CR1000 VX2
-' AM16/32B GROUPS 1 - 8   -- Deep Thermistor Probe 1
-' AM16/32B GROUPS 9 - 16  -- Deep Thermistor Probe 2
-' AM16/32B GROUPS 17 - 24 -- Deep Thermistor Probe 3
-' AM16/32B GROUPS 25 - 32 -- Deep Thermistor Probe 4
+' AM16/32B GROUPS 1 - 8   -- Deep Thermistor Probe 1 -- TP1219
+' AM16/32B GROUPS 9 - 16  -- Deep Thermistor Probe 2 -- TP1217
+' AM16/32B GROUPS 17 - 24 -- Deep Thermistor Probe 3 -- TP1203
+' AM16/32B GROUPS 25 - 32 -- Deep Thermistor Probe 4 -- TP1208
 
 ' AM16/32B #2 in 2/32 Mode
 ' RES - CR1000 C3
@@ -121,25 +157,25 @@
 ' G    - CR1000 G
 ' COM ODD HI - CR1000 SE15,  Precision Resistor to CR1000 VX3
 ' COM ODD LO - CR1000 SE16,  Precision Resistor to CR1000 VX3
-' AM16/32B GROUP 1 & 2     -- Thermal Conductivity Pit 1 Probe 1
-' AM16/32B GROUP 3 & 4     -- Thermal Conductivity Pit 1 Probe 2
-' AM16/32B GROUP 5 & 6     -- Thermal Conductivity Pit 1 Probe 3
-' AM16/32B GROUP 7 & 8     -- Thermal Conductivity Pit 2 Probe 1
-' AM16/32B GROUP 9 & 10    -- Thermal Conductivity Pit 2 Probe 2
-' AM16/32B GROUP 11 & 12   -- Thermal Conductivity Pit 2 Probe 3
-' AM16/32B GROUP 13 - 20   -- Deep Thermistor Probe 5
-' AM16/32B GROUP 21 - 23.1 -- Shallow Thermistor Probe
-' AM16/32B GROUP 23.2      -- Pit 1 Thermistor 1
+' AM16/32B GROUP 1 & 2     -- Thermal Conductivity Pit 1 Probe 1 -- S/N 1148
+' AM16/32B GROUP 3 & 4     -- Thermal Conductivity Pit 1 Probe 2 -- S/N 1153
+' AM16/32B GROUP 5 & 6     -- Thermal Conductivity Pit 1 Probe 3 -- S/N 1150
+' AM16/32B GROUP 7 & 8     -- Thermal Conductivity Pit 2 Probe 1 -- S/N 1187
+' AM16/32B GROUP 9 & 10    -- Thermal Conductivity Pit 2 Probe 2 -- S/N 1196
+' AM16/32B GROUP 11 & 12   -- Thermal Conductivity Pit 2 Probe 3 -- S/N 1195
+' AM16/32B GROUP 13 - 20   -- Deep Thermistor Probe 5 -- TP1208
+' AM16/32B GROUP 21 - 23.1 -- Shallow Thermistor Probe -- Not installed Fall 2012
+' AM16/32B GROUP 23.2      -- Pit 1 Thermistor 1 -- TT1206
 ' AM16/32B Group 24.1      -- Pit 1 Thermistor 2
 ' AM16/32B Group 24.2      -- Pit 1 Thermistor 3
-' AM16/32B Group 25.1      -- Pit 2 Thermistor 1
+' AM16/32B Group 25.1      -- Pit 2 Thermistor 1 -- TT1201
 ' AM16/32B Group 25.2      -- Pit 2 Thermistor 2
 ' AM16/32B Group 26.1      -- Pit 2 Thermistor 3
-' AM16/32B Group 26.2      -- Pit 3 Thermistor 1
+' AM16/32B Group 26.2      -- Pit 3 Thermistor 1 -- Not installed Fall 2012
 ' AM16/32B Group 27.1      -- Pit 3 Thermistor 2
 ' AM16/32B Group 27.2      -- Pit 3 Thermistor 3
-' AM16/32B Group 28        -- HFP01 Pit 1 
-' AM16/32B Group 29        -- HFP01 Pit 2
+' AM16/32B Group 28        -- HFP01 Pit 1 -- S/N 3901
+' AM16/32B Group 29        -- HFP01 Pit 2 -- S/N 3871
 ' AM16/32B Group 30        -- HFP01 Pit 3
 
 ''''''''''''''''''''''''''''''
@@ -326,8 +362,8 @@ Alias shf(3) = Pit_3_HeatFlux
     Const C2 = 0.0002343
     Const C3 = 0.000000086946
     Const Rf = 25000  ' Resistor Value
-    Const HFP01_cal_1 = 60.0 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
-    Const HFP01_cal_2 = 60.0 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_1 = 63.9 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_2 = 67.1 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
     
 
 ''''''''''''''''''''''''''''''''''''''''''''
@@ -338,7 +374,8 @@ Alias shf(3) = Pit_3_HeatFlux
     Units batt_volt = Volts DC
     Units Ptemp = Degrees Celsius
     Units SnowDepth_1 = Centimeters
-    Units SnowDepth_1 = Centimeters    
+    Units SnowDepth_2 = Centimeters    
+    Units SnowDepth_3 = Centimeters        
     Units Thermistors_Mux1 = Degrees Celsius
     Units Thermistors_Mux2 = Degrees Celsius
     Units AirTemp = Degrees Celsius   
@@ -421,108 +458,108 @@ BeginProg
   commscomplete = false
   
   ' Thermistor offsets  
-  Thermistors_offset_Mux1 ( 1  ) = 0.0   '' Bore Hole - 1 Thermistor _1_
-  Thermistors_offset_Mux1 ( 2  ) = 0.0   '' Bore Hole - 1 Thermistor _2_
-  Thermistors_offset_Mux1 ( 3  ) = 0.0   '' Bore Hole - 1 Thermistor _3_
-  Thermistors_offset_Mux1 ( 4  ) = 0.0   '' Bore Hole - 1 Thermistor _4_
-  Thermistors_offset_Mux1 ( 5  ) = 0.0   '' Bore Hole - 1 Thermistor _5_
-  Thermistors_offset_Mux1 ( 6  ) = 0.0   '' Bore Hole - 1 Thermistor _6_
-  Thermistors_offset_Mux1 ( 7  ) = 0.0   '' Bore Hole - 1 Thermistor _7_
-  Thermistors_offset_Mux1 ( 8  ) = 0.0   '' Bore Hole - 1 Thermistor _8_
-  Thermistors_offset_Mux1 ( 9  ) = 0.0   '' Bore Hole - 1 Thermistor _9_
-  Thermistors_offset_Mux1 ( 10 ) = 0.0   '' Bore Hole - 1 Thermistor _10_
-  Thermistors_offset_Mux1 ( 11 ) = 0.0   '' Bore Hole - 1 Thermistor _11_
-  Thermistors_offset_Mux1 ( 12 ) = 0.0   '' Bore Hole - 1 Thermistor _12_
-  Thermistors_offset_Mux1 ( 13 ) = 0.0   '' Bore Hole - 1 Thermistor _13_
-  Thermistors_offset_Mux1 ( 14 ) = 0.0   '' Bore Hole - 1 Thermistor _14_
-  Thermistors_offset_Mux1 ( 15 ) = 0.0   '' Bore Hole - 1 Thermistor _15_
-  Thermistors_offset_Mux1 ( 16 ) = 0.0   '' Bore Hole - 1 Thermistor _16_
-  
-  Thermistors_offset_Mux1 ( 17 ) = 0.0   '' Bore Hole - 2 Thermistor _1_
-  Thermistors_offset_Mux1 ( 18 ) = 0.0   '' Bore Hole - 2 Thermistor _2_
-  Thermistors_offset_Mux1 ( 19 ) = 0.0   '' Bore Hole - 2 Thermistor _3_
-  Thermistors_offset_Mux1 ( 20 ) = 0.0   '' Bore Hole - 2 Thermistor _4_
-  Thermistors_offset_Mux1 ( 21 ) = 0.0   '' Bore Hole - 2 Thermistor _5_
-  Thermistors_offset_Mux1 ( 22 ) = 0.0   '' Bore Hole - 2 Thermistor _6_
-  Thermistors_offset_Mux1 ( 23 ) = 0.0   '' Bore Hole - 2 Thermistor _7_
-  Thermistors_offset_Mux1 ( 24 ) = 0.0   '' Bore Hole - 2 Thermistor _8_
-  Thermistors_offset_Mux1 ( 25 ) = 0.0   '' Bore Hole - 2 Thermistor _9_
-  Thermistors_offset_Mux1 ( 26 ) = 0.0   '' Bore Hole - 2 Thermistor _10_
-  Thermistors_offset_Mux1 ( 27 ) = 0.0   '' Bore Hole - 2 Thermistor _11_
-  Thermistors_offset_Mux1 ( 28 ) = 0.0   '' Bore Hole - 2 Thermistor _12_
-  Thermistors_offset_Mux1 ( 29 ) = 0.0   '' Bore Hole - 2 Thermistor _13_
-  Thermistors_offset_Mux1 ( 30 ) = 0.0   '' Bore Hole - 2 Thermistor _14_
-  Thermistors_offset_Mux1 ( 31 ) = 0.0   '' Bore Hole - 2 Thermistor _15_
-  Thermistors_offset_Mux1 ( 32 ) = 0.0   '' Bore Hole - 2 Thermistor _16_
-  
-  Thermistors_offset_Mux1 ( 33 ) = 0.0   '' Bore Hole - 3 Thermistor _1_
-  Thermistors_offset_Mux1 ( 34 ) = 0.0   '' Bore Hole - 3 Thermistor _2_
-  Thermistors_offset_Mux1 ( 35 ) = 0.0   '' Bore Hole - 3 Thermistor _3_
-  Thermistors_offset_Mux1 ( 36 ) = 0.0   '' Bore Hole - 3 Thermistor _4_
-  Thermistors_offset_Mux1 ( 37 ) = 0.0   '' Bore Hole - 3 Thermistor _5_
-  Thermistors_offset_Mux1 ( 38 ) = 0.0   '' Bore Hole - 3 Thermistor _6_
-  Thermistors_offset_Mux1 ( 39 ) = 0.0   '' Bore Hole - 3 Thermistor _7_
-  Thermistors_offset_Mux1 ( 40 ) = 0.0   '' Bore Hole - 3 Thermistor _8_
-  Thermistors_offset_Mux1 ( 41 ) = 0.0   '' Bore Hole - 3 Thermistor _9_
-  Thermistors_offset_Mux1 ( 42 ) = 0.0   '' Bore Hole - 3 Thermistor _10_
-  Thermistors_offset_Mux1 ( 43 ) = 0.0   '' Bore Hole - 3 Thermistor _11_
-  Thermistors_offset_Mux1 ( 44 ) = 0.0   '' Bore Hole - 3 Thermistor _12_
-  Thermistors_offset_Mux1 ( 45 ) = 0.0   '' Bore Hole - 3 Thermistor _13_
-  Thermistors_offset_Mux1 ( 46 ) = 0.0   '' Bore Hole - 3 Thermistor _14_
-  Thermistors_offset_Mux1 ( 47 ) = 0.0   '' Bore Hole - 3 Thermistor _15_
-  Thermistors_offset_Mux1 ( 48 ) = 0.0   '' Bore Hole - 3 Thermistor _16_
-  
-  Thermistors_offset_Mux1 ( 49 ) = 0.0   '' Bore Hole - 4 Thermistor _1_
-  Thermistors_offset_Mux1 ( 50 ) = 0.0   '' Bore Hole - 4 Thermistor _2_
-  Thermistors_offset_Mux1 ( 51 ) = 0.0   '' Bore Hole - 4 Thermistor _3_
-  Thermistors_offset_Mux1 ( 52 ) = 0.0   '' Bore Hole - 4 Thermistor _4_
-  Thermistors_offset_Mux1 ( 53 ) = 0.0   '' Bore Hole - 4 Thermistor _5_
-  Thermistors_offset_Mux1 ( 54 ) = 0.0   '' Bore Hole - 4 Thermistor _6_
-  Thermistors_offset_Mux1 ( 55 ) = 0.0   '' Bore Hole - 4 Thermistor _7_
-  Thermistors_offset_Mux1 ( 56 ) = 0.0   '' Bore Hole - 4 Thermistor _8_
-  Thermistors_offset_Mux1 ( 57 ) = 0.0   '' Bore Hole - 4 Thermistor _9_
-  Thermistors_offset_Mux1 ( 58 ) = 0.0   '' Bore Hole - 4 Thermistor _10_
-  Thermistors_offset_Mux1 ( 59 ) = 0.0   '' Bore Hole - 4 Thermistor _11_
-  Thermistors_offset_Mux1 ( 60 ) = 0.0   '' Bore Hole - 4 Thermistor _12_
-  Thermistors_offset_Mux1 ( 61 ) = 0.0   '' Bore Hole - 4 Thermistor _13_
-  Thermistors_offset_Mux1 ( 62 ) = 0.0   '' Bore Hole - 4 Thermistor _14_
-  Thermistors_offset_Mux1 ( 63 ) = 0.0   '' Bore Hole - 4 Thermistor _15_
-  Thermistors_offset_Mux1 ( 64 ) = 0.0   '' Bore Hole - 4 Thermistor _16_
-  
-  Thermistors_offset_Mux2 ( 1 ) = 0.0   '' Bore Hole - 5 Thermistor _1_
-  Thermistors_offset_Mux2 ( 2 ) = 0.0   '' Bore Hole - 5 Thermistor _2_
-  Thermistors_offset_Mux2 ( 3 ) = 0.0   '' Bore Hole - 5 Thermistor _3_
-  Thermistors_offset_Mux2 ( 4 ) = 0.0   '' Bore Hole - 5 Thermistor _4_
-  Thermistors_offset_Mux2 ( 5 ) = 0.0   '' Bore Hole - 5 Thermistor _5_
-  Thermistors_offset_Mux2 ( 6 ) = 0.0   '' Bore Hole - 5 Thermistor _6_
-  Thermistors_offset_Mux2 ( 7 ) = 0.0   '' Bore Hole - 5 Thermistor _7_
-  Thermistors_offset_Mux2 ( 8 ) = 0.0   '' Bore Hole - 5 Thermistor _8_
-  Thermistors_offset_Mux2 ( 9 ) = 0.0   '' Bore Hole - 5 Thermistor _9_
-  Thermistors_offset_Mux2 ( 10 ) = 0.0   '' Bore Hole - 5 Thermistor _10_
-  Thermistors_offset_Mux2 ( 11 ) = 0.0   '' Bore Hole - 5 Thermistor _11_
-  Thermistors_offset_Mux2 ( 12 ) = 0.0   '' Bore Hole - 5 Thermistor _12_
-  Thermistors_offset_Mux2 ( 13 ) = 0.0   '' Bore Hole - 5 Thermistor _13_
-  Thermistors_offset_Mux2 ( 14 ) = 0.0   '' Bore Hole - 5 Thermistor _14_
-  Thermistors_offset_Mux2 ( 15 ) = 0.0   '' Bore Hole - 5 Thermistor _15_
-  Thermistors_offset_Mux2 ( 16 ) = 0.0   '' Bore Hole - 5 Thermistor _16_
-  
-  Thermistors_offset_Mux2 ( 17 ) = 0.0   '' Shallow Hole - Thermistor _1_
-  Thermistors_offset_Mux2 ( 18 ) = 0.0   '' Shallow Hole - Thermistor _2_
-  Thermistors_offset_Mux2 ( 19 ) = 0.0   '' Shallow Hole - Thermistor _3_
-  Thermistors_offset_Mux2 ( 20 ) = 0.0   '' Shallow Hole - Thermistor _4_
-  Thermistors_offset_Mux2 ( 21 ) = 0.0   '' Shallow Hole - Thermistor _5_
-  
-  Thermistors_offset_Mux2 ( 22 ) = 0.0   '' Pit 1 Thermistor _1 _
-  Thermistors_offset_Mux2 ( 23 ) = 0.0   '' Pit 1 Thermistor _2 _
-  Thermistors_offset_Mux2 ( 24 ) = 0.0   '' Pit 1 Thermistor _3 _
-  
-  Thermistors_offset_Mux2 ( 25 ) = 0.0   '' Pit 2 Thermistor _1 _
-  Thermistors_offset_Mux2 ( 26 ) = 0.0   '' Pit 2 Thermistor _2 _
-  Thermistors_offset_Mux2 ( 27 ) = 0.0   '' Pit 2 Thermistor _3 _
-
-  Thermistors_offset_Mux2 ( 28 ) = 0.0   '' Pit 3 Thermistor _1 _
-  Thermistors_offset_Mux2 ( 29 ) = 0.0   '' Pit 3 Thermistor _2 _
-  Thermistors_offset_Mux2 ( 30 ) = 0.0   '' Pit 3 Thermistor _3 _
+Thermistors_offset_Mux1 ( 1  ) = -0.006 '' Bore Hole - 1 Thermistor _1_ TP1219
+Thermistors_offset_Mux1 ( 2  ) = 0.156 '' Bore Hole - 1 Thermistor _2_ TP1219
+Thermistors_offset_Mux1 ( 3  ) = 0.036 '' Bore Hole - 1 Thermistor _3_ TP1219
+Thermistors_offset_Mux1 ( 4  ) = 0.046 '' Bore Hole - 1 Thermistor _4_ TP1219
+Thermistors_offset_Mux1 ( 5  ) = 0.046 '' Bore Hole - 1 Thermistor _5_ TP1219
+Thermistors_offset_Mux1 ( 6  ) = 0.067 '' Bore Hole - 1 Thermistor _6_ TP1219
+Thermistors_offset_Mux1 ( 7  ) = 0.003 '' Bore Hole - 1 Thermistor _7_ TP1219
+Thermistors_offset_Mux1 ( 8  ) = -0.040 '' Bore Hole - 1 Thermistor _8_ TP1219
+Thermistors_offset_Mux1 ( 9  ) = 0.015 '' Bore Hole - 1 Thermistor _9_ TP1219
+Thermistors_offset_Mux1 ( 10 ) = 0.004 '' Bore Hole - 1 Thermistor _10_ TP1219
+Thermistors_offset_Mux1 ( 11 ) = 0.035 '' Bore Hole - 1 Thermistor _11_ TP1219
+Thermistors_offset_Mux1 ( 12 ) = 0.038 '' Bore Hole - 1 Thermistor _12_ TP1219
+Thermistors_offset_Mux1 ( 13 ) = 0.018 '' Bore Hole - 1 Thermistor _13_ TP1219
+Thermistors_offset_Mux1 ( 14 ) = 0.024 '' Bore Hole - 1 Thermistor _14_ TP1219
+Thermistors_offset_Mux1 ( 15 ) = 0.003 '' Bore Hole - 1 Thermistor _15_ TP1219
+Thermistors_offset_Mux1 ( 16 ) = 0.003 '' Bore Hole - 1 Thermistor _16_ TP1219
+    
+Thermistors_offset_Mux1 ( 17 ) = -0.039 '' Bore Hole - 2 Thermistor _1_ TP1217
+Thermistors_offset_Mux1 ( 18 ) = 0.068 '' Bore Hole - 2 Thermistor _2_ TP1217
+Thermistors_offset_Mux1 ( 19 ) = 0.067 '' Bore Hole - 2 Thermistor _3_ TP1217
+Thermistors_offset_Mux1 ( 20 ) = 0.043 '' Bore Hole - 2 Thermistor _4_ TP1217
+Thermistors_offset_Mux1 ( 21 ) = 0.046 '' Bore Hole - 2 Thermistor _5_ TP1217
+Thermistors_offset_Mux1 ( 22 ) = 0.047 '' Bore Hole - 2 Thermistor _6_ TP1217
+Thermistors_offset_Mux1 ( 23 ) = 0.052 '' Bore Hole - 2 Thermistor _7_ TP1217
+Thermistors_offset_Mux1 ( 24 ) = 0.055 '' Bore Hole - 2 Thermistor _8_ TP1217
+Thermistors_offset_Mux1 ( 25 ) = 0.046 '' Bore Hole - 2 Thermistor _9_ TP1217
+Thermistors_offset_Mux1 ( 26 ) = 0.046 '' Bore Hole - 2 Thermistor _10_ TP1217
+Thermistors_offset_Mux1 ( 27 ) = 0.024 '' Bore Hole - 2 Thermistor _11_ TP1217
+Thermistors_offset_Mux1 ( 28 ) = -0.020 '' Bore Hole - 2 Thermistor _12_ TP1217
+Thermistors_offset_Mux1 ( 29 ) = 0.004 '' Bore Hole - 2 Thermistor _13_ TP1217
+Thermistors_offset_Mux1 ( 30 ) = 0.066 '' Bore Hole - 2 Thermistor _14_ TP1217
+Thermistors_offset_Mux1 ( 31 ) = 0.003 '' Bore Hole - 2 Thermistor _15_ TP1217
+Thermistors_offset_Mux1 ( 32 ) = 0.048 '' Bore Hole - 2 Thermistor _16_ TP1217
+    
+Thermistors_offset_Mux1 ( 33 ) = 0.065 '' Bore Hole - 3 Thermistor _1_ TP1203
+Thermistors_offset_Mux1 ( 34 ) = 0.067 '' Bore Hole - 3 Thermistor _2_ TP1203
+Thermistors_offset_Mux1 ( 35 ) = 0.005 '' Bore Hole - 3 Thermistor _3_ TP1203
+Thermistors_offset_Mux1 ( 36 ) = 0.010 '' Bore Hole - 3 Thermistor _4_ TP1203
+Thermistors_offset_Mux1 ( 37 ) = 0.046 '' Bore Hole - 3 Thermistor _5_ TP1203
+Thermistors_offset_Mux1 ( 38 ) = -0.016 '' Bore Hole - 3 Thermistor _6_ TP1203
+Thermistors_offset_Mux1 ( 39 ) = 0.008 '' Bore Hole - 3 Thermistor _7_ TP1203
+Thermistors_offset_Mux1 ( 40 ) = 0.037 '' Bore Hole - 3 Thermistor _8_ TP1203
+Thermistors_offset_Mux1 ( 41 ) = 0.000 '' Bore Hole - 3 Thermistor _9_ TP1203
+Thermistors_offset_Mux1 ( 42 ) = 0.035 '' Bore Hole - 3 Thermistor _10_ TP1203
+Thermistors_offset_Mux1 ( 43 ) = -0.035 '' Bore Hole - 3 Thermistor _11_ TP1203
+Thermistors_offset_Mux1 ( 44 ) = 0.049 '' Bore Hole - 3 Thermistor _12_ TP1203
+Thermistors_offset_Mux1 ( 45 ) = 0.003 '' Bore Hole - 3 Thermistor _13_ TP1203
+Thermistors_offset_Mux1 ( 46 ) = -0.008 '' Bore Hole - 3 Thermistor _14_ TP1203
+Thermistors_offset_Mux1 ( 47 ) = 0.052 '' Bore Hole - 3 Thermistor _15_ TP1203
+Thermistors_offset_Mux1 ( 48 ) = 0.058 '' Bore Hole - 3 Thermistor _16_ TP1203
+    
+Thermistors_offset_Mux1 ( 49 ) = 0.022 '' Bore Hole - 4 Thermistor _1_ TP1218
+Thermistors_offset_Mux1 ( 50 ) = 0.129 '' Bore Hole - 4 Thermistor _2_ TP1218
+Thermistors_offset_Mux1 ( 51 ) = 0.034 '' Bore Hole - 4 Thermistor _3_ TP1218
+Thermistors_offset_Mux1 ( 52 ) = 0.024 '' Bore Hole - 4 Thermistor _4_ TP1218
+Thermistors_offset_Mux1 ( 53 ) = 0.025 '' Bore Hole - 4 Thermistor _5_ TP1218
+Thermistors_offset_Mux1 ( 54 ) = 0.031 '' Bore Hole - 4 Thermistor _6_ TP1218
+Thermistors_offset_Mux1 ( 55 ) = 0.017 '' Bore Hole - 4 Thermistor _7_ TP1218
+Thermistors_offset_Mux1 ( 56 ) = 0.046 '' Bore Hole - 4 Thermistor _8_ TP1218
+Thermistors_offset_Mux1 ( 57 ) = -0.027 '' Bore Hole - 4 Thermistor _9_ TP1218
+Thermistors_offset_Mux1 ( 58 ) = 0.004 '' Bore Hole - 4 Thermistor _10_ TP1218
+Thermistors_offset_Mux1 ( 59 ) = 0.046 '' Bore Hole - 4 Thermistor _11_ TP1218
+Thermistors_offset_Mux1 ( 60 ) = 0.069 '' Bore Hole - 4 Thermistor _12_ TP1218
+Thermistors_offset_Mux1 ( 61 ) = 0.023 '' Bore Hole - 4 Thermistor _13_ TP1218
+Thermistors_offset_Mux1 ( 62 ) = 0.046 '' Bore Hole - 4 Thermistor _14_ TP1218
+Thermistors_offset_Mux1 ( 63 ) = 0.046 '' Bore Hole - 4 Thermistor _15_ TP1218
+Thermistors_offset_Mux1 ( 64 ) = 0.015 '' Bore Hole - 4 Thermistor _16_ TP1218
+    
+Thermistors_offset_Mux2 ( 1 ) = 0.023 '' Bore Hole - 5 Thermistor _1_ TP1208
+Thermistors_offset_Mux2 ( 2 ) = 0.105 '' Bore Hole - 5 Thermistor _2_ TP1208
+Thermistors_offset_Mux2 ( 3 ) = 0.047 '' Bore Hole - 5 Thermistor _3_ TP1208
+Thermistors_offset_Mux2 ( 4 ) = 0.015 '' Bore Hole - 5 Thermistor _4_ TP1208
+Thermistors_offset_Mux2 ( 5 ) = 0.046 '' Bore Hole - 5 Thermistor _5_ TP1208
+Thermistors_offset_Mux2 ( 6 ) = 0.024 '' Bore Hole - 5 Thermistor _6_ TP1208
+Thermistors_offset_Mux2 ( 7 ) = 0.046 '' Bore Hole - 5 Thermistor _7_ TP1208
+Thermistors_offset_Mux2 ( 8 ) = 0.046 '' Bore Hole - 5 Thermistor _8_ TP1208
+Thermistors_offset_Mux2 ( 9 ) = 0.038 '' Bore Hole - 5 Thermistor _9_ TP1208
+Thermistors_offset_Mux2 ( 10 ) = 0.067 '' Bore Hole - 5 Thermistor _10_ TP1208
+Thermistors_offset_Mux2 ( 11 ) = 0.046 '' Bore Hole - 5 Thermistor _11_ TP1208
+Thermistors_offset_Mux2 ( 12 ) = -0.019 '' Bore Hole - 5 Thermistor _12_ TP1208
+Thermistors_offset_Mux2 ( 13 ) = -0.016 '' Bore Hole - 5 Thermistor _13_ TP1208
+Thermistors_offset_Mux2 ( 14 ) = 0.032 '' Bore Hole - 5 Thermistor _14_ TP1208
+Thermistors_offset_Mux2 ( 15 ) = 0.046 '' Bore Hole - 5 Thermistor _15_ TP1208
+Thermistors_offset_Mux2 ( 16 ) = 0.083 '' Bore Hole - 5 Thermistor _16_ TP1208
+    
+Thermistors_offset_Mux2 ( 17 ) = 0 '' Shallow Hole - Thermistor _1_ n/a
+Thermistors_offset_Mux2 ( 18 ) = 0 '' Shallow Hole - Thermistor _2_ n/a
+Thermistors_offset_Mux2 ( 19 ) = 0 '' Shallow Hole - Thermistor _3_ n/a
+Thermistors_offset_Mux2 ( 20 ) = 0 '' Shallow Hole - Thermistor _4_ n/a
+Thermistors_offset_Mux2 ( 21 ) = 0 '' Shallow Hole - Thermistor _5_ n/a
+    
+Thermistors_offset_Mux2 ( 22 ) = 0.007 '' Pit 1 Thermistor _1 _ TT1210
+Thermistors_offset_Mux2 ( 23 ) = 0.002 '' Pit 1 Thermistor _2 _ TT1210
+Thermistors_offset_Mux2 ( 24 ) = 0.035 '' Pit 1 Thermistor _3 _ TT1210
+    
+Thermistors_offset_Mux2 ( 25 ) = 0.03 '' Pit 2 Thermistor _1 _ TT1209
+Thermistors_offset_Mux2 ( 26 ) = 0.011 '' Pit 2 Thermistor _2 _ TT1209
+Thermistors_offset_Mux2 ( 27 ) = 0.053 '' Pit 2 Thermistor _3 _ TT1209
+    
+Thermistors_offset_Mux2 ( 28 ) = 0 '' Pit 3 Thermistor _1 _ n/a
+Thermistors_offset_Mux2 ( 29 ) = 0 '' Pit 3 Thermistor _2 _ n/a
+Thermistors_offset_Mux2 ( 30 ) = 0 '' Pit 3 Thermistor _3 _ n/a
 
   heater(1) = 1041.5  '' East 30 Pit 1 - Heater #1 Resistance
   heater(2) = 1041.5  '' East 30 Pit 1 - Heater #2 Resistance
@@ -639,7 +676,7 @@ BeginProg
       ' Convert mV to W/m^2
       shf(1) = shf(1) * HFP01_cal_1
       shf(2) = shf(2) * HFP01_cal_2
-      shf(3) = shf(3) * HFP01_cal_3
+      'shf(3) = shf(3) * HFP01_cal_3
     EndIf        
     '''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''
