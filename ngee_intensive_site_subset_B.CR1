@@ -4,10 +4,10 @@
 ' This program is just the Fall 2012 program
 ' I'll do a second one once we get the full complement of instrumentation in.  
 ' The wiring will need to change some.
-' Draft V1.1
+' Draft V1.2
 ' Creation Dates: 2012-08-16
 ' Modified: 2012-09-20
-
+' Modified: 2013-01-09 fixed HFP bugs
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -362,8 +362,8 @@ Alias shf(3) = Pit_3_HeatFlux
     Const C2 = 0.0002343
     Const C3 = 0.000000086946
     Const Rf = 25000  ' Resistor Value
-    Const HFP01_cal_1 = 62.7 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
-    Const HFP01_cal_2 = 64.6 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_1 = 1 / (62.7 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_2 = 1 / (64.6 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
     
 
 ''''''''''''''''''''''''''''''''''''''''''''
@@ -374,8 +374,7 @@ Alias shf(3) = Pit_3_HeatFlux
     Units batt_volt = Volts DC
     Units Ptemp = Degrees Celsius
     Units SnowDepth_1 = Centimeters
-    Units SnowDepth_2 = Centimeters    
-    Units SnowDepth_3 = Centimeters        
+    Units SnowDepth_2 = Centimeters        
     Units Thermistors_Mux1 = Degrees Celsius
     Units Thermistors_Mux2 = Degrees Celsius
     Units AirTemp = Degrees Celsius   
@@ -420,8 +419,7 @@ Alias shf(3) = Pit_3_HeatFlux
       ' snow 
       Average(1,AirTemp,fp2,false)
       Sample(1,SnowDepth_1,FP2)
-      Sample(1,SnowDepth_2,FP2)      
-      Sample(1,SnowDepth_3,FP2)        
+      Sample(1,SnowDepth_2,FP2)        
     EndTable
 
     DataTable(Snow,true,-1)
@@ -453,7 +451,6 @@ BeginProg
   Signature
   ' Snow
   SR50A_height_1 = 0  ' units are centimeters
-  SR50A_height_2 = 0  ' units are centimeters
   SR50A_height_2 = 0  ' units are centimeters  
   commscomplete = false
   
@@ -585,6 +582,7 @@ BeginProg
     '' Radio and Thermal Conducitivity Control  ''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    if radioflag=true then sw12(1)
       ' if the battery voltage is high then turn the radio on hourly 
       ' also allow the thermal conductivity sensors to be measured
       If TimeIntoInterval(0,60,min) Then
@@ -667,9 +665,10 @@ BeginProg
       i = 1
       SubScan(0,usec,27)
         'loop through the thermal conductivity probes and thermistors
-        PulsePort(1,10000)
+        PulsePort(4,10000)
       NextSubScan
-      SubScan(0,sec,3)        
+      SubScan(0,sec,3)    
+        PulsePort(4,10000)    
         VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
         i = i + 1
       NextSubScan
@@ -693,9 +692,6 @@ BeginProg
       SDI12Recorder(Raw_Dist_2,7,1, "C!", 100, 0)        ' Units are Centimeters
       Distance_2 = Raw_Dist_2*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_2 = SR50A_height_2 - Distance_2
-      SDI12Recorder(Raw_Dist_3,7,2, "C!", 100, 0)        ' Units are Centimeters
-      Distance_3 = Raw_Dist_3*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
-      SnowDepth_3 = SR50A_height_3 - Distance_3
 
     EndIf
     
@@ -738,7 +734,7 @@ BeginProg
     generator = 0
     sum = 0
     tc = 0
-    If  TimeIntoInterval(0,60,Min) Then 
+    If  TimeIntoInterval(0,1440,Min) Then 
       If measureTC = true Then
         Flag(1) = True         
       EndIf

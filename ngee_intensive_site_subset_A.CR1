@@ -7,7 +7,7 @@
 ' Draft V1.1
 ' Creation Dates: 2012-08-16
 ' Modified: 2012-09-20
-
+' Modified: 2013-01-09 fixed a couple bugs with the heat flux plates.
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -362,8 +362,8 @@ Alias shf(3) = Pit_3_HeatFlux
     Const C2 = 0.0002343
     Const C3 = 0.000000086946
     Const Rf = 25000  ' Resistor Value
-    Const HFP01_cal_1 = 63.9 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
-    Const HFP01_cal_2 = 67.1 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_1 = 1 / (63.9 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_2 = 1 / (67.1 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
     
 
 ''''''''''''''''''''''''''''''''''''''''''''
@@ -421,7 +421,6 @@ Alias shf(3) = Pit_3_HeatFlux
       Average(1,AirTemp,fp2,false)
       Sample(1,SnowDepth_1,FP2)
       Sample(1,SnowDepth_2,FP2)      
-      Sample(1,SnowDepth_3,FP2)        
     EndTable
 
     DataTable(Snow,true,-1)
@@ -454,7 +453,6 @@ BeginProg
   ' Snow
   SR50A_height_1 = 0  ' units are centimeters
   SR50A_height_2 = 0  ' units are centimeters
-  SR50A_height_2 = 0  ' units are centimeters  
   commscomplete = false
   
   ' Thermistor offsets  
@@ -584,6 +582,7 @@ Thermistors_offset_Mux2 ( 30 ) = 0 '' Pit 3 Thermistor _3 _ n/a
     '' Radio and Thermal Conducitivity Control  ''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
+      if radioflag=true then sw12(1)
       ' if the battery voltage is high then turn the radio on hourly 
       ' also allow the thermal conductivity sensors to be measured
       If TimeIntoInterval(0,60,min) Then
@@ -666,9 +665,10 @@ Thermistors_offset_Mux2 ( 30 ) = 0 '' Pit 3 Thermistor _3 _ n/a
       i = 1
       SubScan(0,usec,27)
         'loop through the thermal conductivity probes and thermistors
-        PulsePort(1,10000)
+        PulsePort(4,10000)
       NextSubScan
-      SubScan(0,sec,3)        
+      SubScan(0,sec,3)    
+        PulsePort(4,10000)    
         VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
         i = i + 1
       NextSubScan
@@ -692,9 +692,6 @@ Thermistors_offset_Mux2 ( 30 ) = 0 '' Pit 3 Thermistor _3 _ n/a
       SDI12Recorder(Raw_Dist_2,7,1, "C!", 100, 0)        ' Units are Centimeters
       Distance_2 = Raw_Dist_2*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_2 = SR50A_height_2 - Distance_2
-      SDI12Recorder(Raw_Dist_3,7,2, "C!", 100, 0)        ' Units are Centimeters
-      Distance_3 = Raw_Dist_3*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
-      SnowDepth_3 = SR50A_height_3 - Distance_3
 
     EndIf
     
@@ -737,7 +734,7 @@ Thermistors_offset_Mux2 ( 30 ) = 0 '' Pit 3 Thermistor _3 _ n/a
     generator = 0
     sum = 0
     tc = 0
-    If  TimeIntoInterval(0,60,Min) Then 
+    If  TimeIntoInterval(0,1440,Min) Then 
       If measureTC = true Then
         Flag(1) = True         
       EndIf

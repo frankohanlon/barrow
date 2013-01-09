@@ -7,7 +7,7 @@
 ' Draft V1.1
 ' Creation Dates: 2012-08-16
 ' Modified: 2012-09-20
-
+' Modified: 2013-01-09 fixed HFP bugs
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -362,8 +362,8 @@ Alias shf(3) = Pit_3_HeatFlux
     Const C2 = 0.0002343
     Const C3 = 0.000000086946
     Const Rf = 25000  ' Resistor Value
-    Const HFP01_cal_1 = 65.6 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
-    Const HFP01_cal_2 = 66.0 / 1000   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_1 = 1 / (65.6 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_2 = 1 / (66.0 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
     
 
 ''''''''''''''''''''''''''''''''''''''''''''
@@ -430,6 +430,9 @@ Alias shf(3) = Pit_3_HeatFlux
       Sample (1,Distance_1,FP2)
       Sample(1,SnowDepth_2,FP2)
       Sample (1,Distance_2,FP2)
+      Sample(1,SnowDepth_3,FP2)
+      Sample (1,Distance_3,FP2)
+
     EndTable
     
     DataTable(TableTC,true,-1)
@@ -454,7 +457,7 @@ BeginProg
   ' Snow
   SR50A_height_1 = 0  ' units are centimeters
   SR50A_height_2 = 0  ' units are centimeters
-  SR50A_height_2 = 0  ' units are centimeters  
+  SR50A_height_3 = 0  ' units are centimeters  
   commscomplete = false
   
   ' Thermistor offsets  
@@ -587,6 +590,7 @@ BeginProg
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
       ' if the battery voltage is high then turn the radio on hourly 
       ' also allow the thermal conductivity sensors to be measured
+      if radioflag=true then sw12(1)
       If TimeIntoInterval(0,60,min) Then
         If batt_volt >= 12.4 Then 
           SW12(1)
@@ -629,7 +633,7 @@ BeginProg
         Thermistors_Mux1(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i+1)  'calculate temperature with correction for zero offset
         i = i+2      
       NextSubScan
-      PortSet(2,0)  'Multiplexer #1 OFF
+      PortSet(2,0 )  'Multiplexer #1 OFF
     EndIf
     
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -667,9 +671,10 @@ BeginProg
       i = 1
       SubScan(0,usec,27)
         'loop through the thermal conductivity probes and thermistors
-        PulsePort(1,10000)
+        PulsePort(4,10000)
       NextSubScan
-      SubScan(0,sec,3)        
+      SubScan(0,sec,3)    
+        PulsePort(4,10000)    
         VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
         i = i + 1
       NextSubScan
@@ -738,7 +743,7 @@ BeginProg
     generator = 0
     sum = 0
     tc = 0
-    If  TimeIntoInterval(0,60,Min) Then 
+    If  TimeIntoInterval(0,1440,Min) Then 
       If measureTC = true Then
         Flag(1) = True         
       EndIf
