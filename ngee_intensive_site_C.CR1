@@ -598,9 +598,9 @@ BeginProg
   ''''''''''''''''''''''''''''''''''''''''''''''''''''
   Signature
   ' Snow
-  SR50A_height_1 = 0  ' units are centimeters
-  SR50A_height_2 = 0  ' units are centimeters
-  SR50A_height_3 = 0  ' units are centimeters  
+  SR50A_height_1 = 181.0  ' units are centimeters
+  SR50A_height_2 = 110.9  ' units are centimeters
+  SR50A_height_3 = 149.3  ' units are centimeters  
   commscomplete = false
   
   ' Thermistor offsets  
