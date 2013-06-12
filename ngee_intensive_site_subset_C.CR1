@@ -777,6 +777,8 @@ BeginProg
         muxincr = 1
         PortSet(3,1)  
         SubScan(0,Sec,12)
+          ' erroring here 
+          ' 'compile results: Warning: Variable Theat out of bounds'
           PulsePort(4,10000)
           TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
           PulsePort(4,10000)

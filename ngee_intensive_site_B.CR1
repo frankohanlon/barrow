@@ -5,27 +5,25 @@
 ' Creation Dates: 2012-08-16
 ' Modified: 2012-09-20
 ' Modified: 2013-01-09 fixed HFP bugs
-' Modified: 2013-04-11 Major Update: Adding Met Instrumentation
+' Modified: 2013-04-11  - 2013-06-10 Major Update: Adding Met Instrumentation
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'''  SENSOR LIST (As Built)   '''''''''''''''''''''''''''''
+'''  FULL SENSOR LIST (As Built)   ''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' 2 -- HFP01 Heat Flux Plates
 ' 6 -- Vitel HydraProbe II Probes
 ' 6 -- East30 Sensors Thermal Conductivity Probes 
-' 5 -- 16 point thermistor strings
-' 6 -- thermistors to be installed adjacent to the soil moisture probes
-' 1 -- 5 point shallow borehole 
-' 1 -- 107 Air Temperature
-' 2 -- SR50A Snow Depth
-' 2 -- HMP155 AT/RH Probes
-' 1 -- MetOne WS
-' 1 -- RM Young WS/WD
-' 1 -- CS106 Barometric Pressure
-' 1 -- CNR4 Net Radiometer w/ Heater Fan / Control
-
+' 5 -- GI 16 point thermistor strings
+' 6 -- GI thermistors to be installed adjacent to the soil moisture probes
+' 1 -- GI 5 point shallow borehole 
+' 1 -- CSI 107 Air Temperature
+' 2 -- CSC SR50A Snow Depth
+' 1 -- Kipp & Zonen CNR4 Net Radiometer
+' 2 -- Vaisala HMP155A AT/RH
+' 2 -- MetOne 014A Anemometers
+' 1 -- Texas Electronics TE525mm
 
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -34,16 +32,16 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-' SE1  -- CNR4 SW In HI
-' SE2  -- CNR4 SW In LO
-' SE3  -- CNR4 SW OUT HI
-' SE4  -- CNR4 SW OUT LO
-' SE5  -- CNR4 LW IN HI
-' SE6  -- CNR4 LW IN LO
+' SE1  -- 
+' SE2  -- 
+' SE3  -- 
+' SE4  -- 
+' SE5  -- 
+' SE6  -- 
 ' SE7  -- CNR4 Dome Temperature Signal
 ' SE8  -- 107 Probe Signal (Red Wire)
-' SE9  -- CNR4 LW OUT HI
-' SE10 -- CNR4 LW OUT LO
+' SE9  -- 
+' SE10 -- 
 ' SE11 -- AM16/32B #3 COM ODD HI
 ' SE12 -- AM16/32B #3 COM ODD LO
 ' SE13 -- AM16/32B #1 COM ODD HI, Precision Resistor to VX2
@@ -51,39 +49,28 @@
 ' SE15 -- AM16/32B #2 COM ODD HI, Precision Resistor to VX3
 ' SE16 -- AM16/32B #2 COM ODD LO, Precision Resistor to VX3
 
-' VX1 -- 107 Probe Excitation (Black Wire); **CNR4 LW Dome Temperature Excitation**, **RM Young WD Excite**
+' VX1 -- 107 Probe Excitation (Black Wire); **CNR4 LW Dome Temperature Excitation**
 ' VX2 -- Precision resistors to Mux 2 COM ODD HI, SE1, COM ODD LO, SE2
 ' VX3 -- Precision resistors to Mux 3 COM ODD HI, SE1, COM ODD LO, SE2, 
 
-' P1 -- MetOne WS+
-' P2 -- RM Young WS+
+' P1 -- MetOne 1m WS+ (white wire)
+' P2 -- MetOne 3.5m WS+ (white wire)
 
-' C1 -- SDM IO C1
-' C2 -- SDM IO C2
-' C3 -- SDM IO C3
+' C1 -- AM 16/32B #1 & #2 RES
+' C2 -- AM16/32B #3 RES & HMP155 CTRL
+' C3 -- CNR4 Heater/Fan CTRL
 ' C4 -- AM16/32B #1, 2, & 3 -- CLK
-' C5 -- SDI 12 Devices Part 1 (6 Vitel Probes ) (Blue Wire)
+' C5 -- SDI 12 Devices: (6 Vitel Probes ) (Blue Wire) & (2 SR50A) (Green Wire)
 ' C6 -- Vitel Probe CONTROL (Run to SW12V Control for Vitel Probes)
-' C7 -- SDI 12 Devices Part 2 (2 SR50A ) (Green Wire)
-' C8 -- TE525M Signal
+' C7 -- TE525M Signal (white wire)
+' C8 -- Thermal Conductivity CTRL
 ' SW12V -- Radio Power
 
 ' Wiring that will need to be moved / extended to the SDM Interface:
 ' C2 -- AM16/32B #1 -- RES
 ' C3 -- AM16/32B #2 -- RES
-' C8 -- Thermal Conductivity Control
 
 ' Signal Ground -- HFP01 Shields (Clear Wire), 107 Probe SG (Purple Wire), SR50A 
-
-' SDM Interface Wiring:
-' 1 -- AM16/32B #1 RES
-' 2 -- AM16/32B #2 RES
-' 3 -- AM16/32B #3 RES
-' 4 -- Thermal Conductivity Control
-' 5 -- HMP155 Control
-' 6 -- CS106 Control
-' 7 -- CNR4 Heater/Fan Control
-
 
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -141,7 +128,7 @@
 ' SR50A (All)
 ' Black Wire -- CR1000 Power Ground
 ' Red Wire -- CR1000 +12V
-' Green Wire -- CR1000 C7
+' Green Wire -- CR1000 C5
 ' White Wire -- CR1000 Ground
 ' Clear Wire -- CR1000 Ground
 
@@ -157,35 +144,57 @@
 ' Blue Wire -- AM16/32B #2 Even Group HI
 ' Gray Wire -- AM16/32B #2 Even Group LO, jumper to Signal Ground
 ' Black Wire -- Current Excitation Module (one per channel)
-
+  
 ' TE525MM
-' White Wire -- CR1000 C8
+' White Wire -- CR1000 C7
 ' Black Wire -- CR1000 G
 
-' MetOne WS
+' MetOne WS @ 1m
 ' White Wire -- CR1000 P1
 ' Black Wire -- CR1000 G
 
-' RM Young WS/WD
-' Red Wire -- CR1000 P2
-' Black Wire -- 
-' Green Wire -- CR1000 Vx1
-' Blue Wire -- Sig Ground
-' White Wire -- 
+' MetOne WS @ 3.5m
+' White Wire -- CR1000 P2
+' Black Wire -- CR1000 G
 
-' Vaisala HMP155 Air Temperature & Relative Humidity
-' 
+' Vaisala HMP155 Air Temperature & Relative Humidity @ 1m
+' Yellow Wire -- AM16/32B #3 1 HI
+' Blue Wire   -- AM16/32B #3 2 HI
+' White Wire  -- AM16/32B #3 1 LO & Jumper to 2 LO
+' Black Wire  -- Power Ground
+' Clear Wire  -- Power Ground
+' Red Wire    -- SW12V Power
+' SW12V CTRL -- CR1000 C2
 
-' Vaisala CS106 Barometric Pressure
-' Blue Wire -- AM16/32B #3 Group 5 HI
-' Yellow Wire -- AM16/32B #3 Group 5 LO
-' Red Wire -- Power 12V
-' Black Wire -- Power G
-' Green Wire -- SDM IO C6
-' Clear Wire -- Power G 
+' Vaisala HMP155 Air Temperature & Relative Humidity @ 3.5m
+' Yellow Wire -- AM16/32B #3 3 HI
+' Blue Wire   -- AM16/32B #3 4 HI
+' White Wire  -- AM16/32B #3 3 LO & Jumper to 4 LO
+' Black Wire  -- Power Ground
+' Clear Wire  -- Power Ground
+' Red Wire    -- SW12V Power
+' SW12V CTRL -- CR1000 C2
+
+' Kipp & Zonen CNR4 Net Radiometer
+' CNR4 Left Yellow Cable
+' Pyranometer Upper Hi (Red Wire) -- AM16/32B #3 Group 5 Hi
+' Pyranometer Upper Lo (Blue Wire) -- AM16/32B #3 Group 5 Lo
+' Pyranometer Lower Hi (White Wire) -- AM16/32B #3 Group 6 Hi
+' Pyranometer Lower Lo (Black Wire) -- AM16/32B #3 Group 6 Lo
+' Pyrgeometer Upper Hi (Gray Wire) -- AM16/32B #3 Group 7 Hi
+' Pyrgeometer Upper Lo (Yellow Wire) -- AM16/32B #3 Group 7 Lo
+' Pyrgeometer Lower Hi (Brown Wire) -- AM16/32B #3 Group 8 Hi
+' Pyrgeometer Lower Lo (Green Wire) -- AM16/32B #3 Group 8 Lo
+' Shield -- AM16/32B Ground
+' CNR4 Right Yellow cable
+' Thermistor Hi (White Wire) -- CR1000 SE7
+' Thermistor Lo (Black Wire) -- CR1000 AG
+' Precision Resistor -- CR1000 SE7 to CR1000 VX1 
+' Shield -- CR1000 Ground
+
 
 ' AM16/32B #1 in 2/32 Mode
-' RES - **SDM IO C1**
+' RES - CR1000 C1
 ' CLK - CR1000 C4
 ' 12V  - CR1000 12V
 ' G    - CR1000 G
@@ -197,7 +206,7 @@
 ' AM16/32B GROUPS 25 - 32 -- Deep Thermistor Probe 4 -- TP1206
 
 ' AM16/32B #2 in 2/32 Mode
-' RES - **SDM IO C2**
+' RES - CR1000 C1
 ' CLK - CR1000 C4
 ' 12V  - CR1000 12V
 ' G    - CR1000 G
@@ -223,44 +232,24 @@
 ' AM16/32B Group 28        -- HFP01 Pit 1 -- S/N 3861
 ' AM16/32B Group 29        -- HFP01 Pit 2 -- S/N 3899
 ' AM16/32B Group 30        -- HFP01 Pit 3
-' AM16/32B Group 31        -- **RM Young WD Signal** (I'm not sure there is room to do this...)
+' AM16/32B Group 31        -- 
 
 ' AM16/32B #3 in 2/32 Mode
-' RES - SDM IO C3
-' CLK - CR1000 C1
+' RES - CR1000 C2
+' CLK - CR1000 C4
 ' 12V  - CR1000 12V
 ' G    - CR1000 G
 ' COM ODD HI - CR1000 SE11
 ' COM ODD LO - CR1000 SE12
-' AM16/32B GROUP 1      -- HMP155 1m AT
-' AM16/32B GROUP 2      -- HMP155 1m RH
-' AM16/32B GROUP 3      -- HMP155 3.5m AT
-' AM16/32B Group 4      -- HMP155 3.5m RH
-' AM16/32B GROUP 5      -- CS106 Signal
+' AM16/32B #3 GROUP 1      -- HMP155 1m AT
+' AM16/32B #3 GROUP 2      -- HMP155 1m RH
+' AM16/32B #3 GROUP 3      -- HMP155 3.5m AT
+' AM16/32B #3 Group 4      -- HMP155 3.5m RH
+' AM16/32B #3 Group 5      -- CNR4 SW UP
+' AM16/32B #3 Group 6      -- CNR4 SW DN
+' AM16/32B #3 Group 7      -- CNR4 LW UP
+' AM16/32B #3 Group 8      -- CNR4 LW DN
 
-
-' Complicated to describe but here goes:
-' New Wiring going into the original enclosure:
-' CNR4 Radiometer Wires
-' Power & Ground to Leg Enclosure
-' Wires to SDM IO in Leg Enclosure
-' CTRL Wire for Thermal Conductivity
-' CTRL Wire for Mux 1 & 2
-' COM ODD HI & COM ODD LO for AM16/32B #3
-' MetONE WS
-' RM Young WS/WD
-' Tipping Bucket
- 
-' To be wired into the leg enclosure:
-' CNR4 Heater Wires
-' HMP155s
-' CS106
-' Power & Ground to Leg Enclosure
-' Wires to SDM IO in Leg Enclosure
-' CTRL Wire for Thermal Conductivity
-' CTRL Wire for Mux 1 & 2
-' COM ODD HI & COM ODD LO for AM16/32B #3
-' Assortment of SW12V CTRL Units 
 
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
@@ -292,7 +281,6 @@
     ''' Snow Related
     Public Raw_Dist_1, Distance_1, SnowDepth_1, SR50A_height_1
     Public Raw_Dist_2, Distance_2, SnowDepth_2, SR50A_height_2
-    Public Raw_Dist_3, Distance_3, SnowDepth_3, SR50A_height_3    
     Public AirTemp
     Public hTime
     
@@ -320,7 +308,22 @@
     Public i1
     Public i2
     
-
+    ''' Met Variable Declaration
+    Public ws(2)
+    Public at1m, dp1m, rh1m
+    Public at35m, dp35m, rh35m
+    Public summer_rain
+    Public short_up, short_dn
+    Public long_up, long_dn
+    Public CNR_Therm
+    Public CNR_Temp_K
+    Public long_up_corr
+    Public long_dn_corr
+    Public Rs_net
+    Public Rl_net
+    Public albedo
+    Public Net_rad
+    Public cnr4time(9)
     
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
@@ -436,6 +439,13 @@ Alias shf(1) = Pit_1_HeatFlux
 Alias shf(2) = Pit_2_HeatFlux
 Alias shf(3) = Pit_3_HeatFlux
 
+Alias ws(1) = ws1m
+Alias ws(2) = ws35m
+
+Alias cnr4time(4) = thisHour
+Alias cnr4time(5) = thisMinute
+Alias cnr4time(9) = thisDayOfYear
+
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
 '' Declare Constants '''''''''
@@ -448,7 +458,11 @@ Alias shf(3) = Pit_3_HeatFlux
     Const Rf = 25000  ' Resistor Value
     Const HFP01_cal_1 = 1 / (62.7 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
     Const HFP01_cal_2 = 1 / (64.6 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
-    
+    Const SW_UP_CF = 1 / 14.22 * 1000   ' = (1 / 14.22 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const SW_DN_CF = 1 / 13.43 * 1000   ' = (1 / 13.43 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const LW_UP_CF = 1 / 8.67 * 1000    ' = (1 / 8.67 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const LW_DN_CF = 1 / 8.45 * 1000    ' = (1 / 8.45 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const CNR_Resistor = 9990    
 
 ''''''''''''''''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''''''''''''''''
@@ -464,7 +478,25 @@ Alias shf(3) = Pit_3_HeatFlux
     Units AirTemp = Degrees Celsius   
     Units shf = Watts / meter^2 
     ' Could optionally add units for the HydraProbes.
-    
+    Units ws1m = meters/second
+    Units ws35m = meters/second
+    Units at1m = Degrees Celsius
+    Units at35m = Degrees Celsius
+    Units dp1m = Degrees Celsius
+    Units dp35m = Degrees Celsius
+    Units rh1m = Percent
+    Units rh35m = Percent
+    Units summer_rain = millimeters
+    Units short_up = Watts / meter^2
+    Units short_dn = Watts / meter^2
+    Units long_up = Watts / meter^2
+    Units long_dn = Watts / meter^2
+    Units CNR_Temp_K = Degrees Kelvin
+    Units Rs_net = Watts / meter^2
+    Units Rl_net = Watts / meter^2
+    Units albedo = Percent
+    Units Net_rad = Watts / meter^2
+
 '''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''
 '' Define Data Output Tables ''
@@ -474,9 +506,9 @@ Alias shf(3) = Pit_3_HeatFlux
     DataTable (Diagnostic,1,-1)
       DataInterval (0,1440,Min,10)
       Minimum (1,batt_volt,FP2,False,False)
-      Minimum (1,PTemp,FP2,False,False)
-      Average (1,PTemp,FP2,False)
-      Maximum (1,PTemp,FP2,False,False)
+      Minimum (1,Ptemp,FP2,False,False)
+      Average (1,Ptemp,FP2,False)
+      Maximum (1,Ptemp,FP2,False,False)
       Sample (1,p_sig,IEEE4)        
     EndTable
     
@@ -518,6 +550,25 @@ Alias shf(3) = Pit_3_HeatFlux
       Sample(6, time,IEEE4)
       Sample(6, Trise, FP2)
       Sample(6, power, FP2)
+    EndTable
+
+    DataTable(Met,true,-1)
+      DataInterval(0,60,Min,10)
+      Average(1,at1m,fp2,0)
+      Average(1,at35m,fp2,0)
+      Average(1,dp1m,fp2,0)
+      Average(1,dp35m,fp2,0)
+      Sample(1,rh1m,fp2)
+      Sample(1,rh35m,fp2)
+      Average(1,ws1m,fp2,0)
+      Average(1,ws35m,fp2,0)
+      Totalize(1,summer_rain,fp2,false)
+      Average(1,short_up,fp2,0)
+      Average(1,short_dn,fp2,0)
+      Average(1,long_up,fp2,0)
+      Average(1,long_dn,fp2,0)
+      Average(1,albedo,fp2,0)
+      Average(1,Net_rad,fp2,0)
     EndTable
     
 '''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -644,13 +695,13 @@ BeginProg
 
 
   heater(1) = 1041.5  '' East 30 Pit 1 - Heater #1 Resistance
-  heater(2) = 1041.5  '' East 30 Pit 1 - Heater #2 Resistance
+   heater(2) = 1041.5  '' East 30 Pit 1 - Heater #2 Resistance
   heater(3) = 1041.5  '' East 30 Pit 1 - Heater #3 Resistance
   heater(4) = 1041.5  '' East 30 Pit 2 - Heater #1 Resistance
   heater(5) = 1041.5  '' East 30 Pit 2 - Heater #2 Resistance
   heater(6) = 1041.5  '' East 30 Pit 2 - Heater #3 Resistance
   
-  Scan(60,Sec, 10, 0)
+  Scan(30,Sec, 10, 0)
 
     '''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''
@@ -664,9 +715,10 @@ BeginProg
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
     '' Radio and Thermal Conducitivity Control  ''''''''
+    '' Also CNR4 Fan/Heater Control             ''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''''''''''''''
-    if radioflag=true then sw12(1)
+    If radioflag=true Then SW12(1)
       ' if the battery voltage is high then turn the radio on hourly 
       ' also allow the thermal conductivity sensors to be measured
       If TimeIntoInterval(0,60,min) Then
@@ -691,14 +743,26 @@ BeginProg
       EndIf      
       ' radioflag is used to leave the radio turned on all the time (typically used remotely)
       If batt_volt < 12.6 Then radioflag = false
-      
+      RealTime(cnr4time())
+      If thisDayOfYear > 105 AND thisDayOfYear < 258 Then  'period 4/15 to 9/15
+        If TimeIntoInterval(0,60,min) Then  ' once per hour check to see if the heater/fan should be on.
+          If batt_volt > 12.6 Then  ' if the voltage is good, then turn on the heater/fan
+            PortSet(3,1)
+          Else  ' otherwise, turn it off.
+            PortSet(3,0)
+          EndIf
+        EndIf
+      Else ' not in that period, make sure the CNR4 heater/fan is off
+        PortSet(3,0)
+      EndIf
+          
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '' Measure Thermistor Probes on Multiplexer #1 ''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''   
     If TimeIntoInterval (0,10,Min) Then
-      PortSet(2,1)  'Multiplexer #1 ON
+      PortSet(1,1)  'Multiplexer #1 ON
       i = 1
       SubScan(0,uSec,32)
         PulsePort(4,10000)
@@ -711,16 +775,16 @@ BeginProg
         Thermistors_Mux1(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i+1)  'calculate temperature with correction for zero offset
         i = i+2      
       NextSubScan
-      PortSet(2,0)  'Multiplexer #1 OFF
+      PortSet(1,0)  'Multiplexer #1 OFF
     EndIf
     
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''  '''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '' Measure Thermistor Probes on Multiplexer #2 ''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''        
     If TimeIntoInterval (0,10,Min) Then
-      PortSet(3,1)  'Multiplexer #2 ON
+      PortSet(1,1)  'Multiplexer #2 ON
       i = 1
       SubScan(0,uSec,12)
         ' Loop through the Thermal Conductivity Probes
@@ -737,7 +801,7 @@ BeginProg
         Thermistors_Mux2(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux2(i+1)  'calculate temperature with correction for zero offset
         i = i+2      
       NextSubScan
-      PortSet(3,0)  'Multiplexer #2 OFF
+      PortSet(1,0)  'Multiplexer #2 OFF
     EndIf
     '''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''    
@@ -745,7 +809,7 @@ BeginProg
     '''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''    
     If TimeIntoInterval(0,10,min) Then
-      PortSet(3,1)
+      PortSet(1,1)
       i = 1
       SubScan(0,usec,27)
         'loop through the thermal conductivity probes and thermistors
@@ -756,11 +820,10 @@ BeginProg
         VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
         i = i + 1
       NextSubScan
-      PortSet(3,0)
+      PortSet(1,0)
       ' Convert mV to W/m^2
       shf(1) = shf(1) * HFP01_cal_1
       shf(2) = shf(2) * HFP01_cal_2
-      'shf(3) = shf(3) * HFP01_cal_3
     EndIf        
     '''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''
@@ -770,10 +833,10 @@ BeginProg
     Therm107 (AirTemp,1,8,Vx1,0,250,1.0,0)
            
     If  TimeIntoInterval(0,5,Min) Then
-      SDI12Recorder(Raw_Dist_1,7, 0, "C!", 100, 0)        ' Units are Centimeters
+      SDI12Recorder(Raw_Dist_1,5, 7, "M!", 100, 0)        ' Units are Centimeters
       Distance_1 = Raw_Dist_1*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_1 = SR50A_height_1 - Distance_1
-      SDI12Recorder(Raw_Dist_2,7,1, "C!", 100, 0)        ' Units are Centimeters
+      SDI12Recorder(Raw_Dist_2,5,8, "M!", 100, 0)        ' Units are Centimeters
       Distance_2 = Raw_Dist_2*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_2 = SR50A_height_2 - Distance_2
 
@@ -806,7 +869,7 @@ BeginProg
         k = k+1
       NextSubScan
       PortSet(6,0)  'power off
-      HTime = Timer(1,msec,4) / 1000
+      hTime = Timer(1,msec,4) / 1000
     EndIf
 
 
@@ -823,19 +886,19 @@ BeginProg
         Flag(1) = True         
       EndIf
     EndIf  
-    If flag(1) = True Then    
+    If Flag(1) = True Then    
       generator = 1
       sum = 2.72
       tc = 1
       ' steady state, iniital measurments
-      PortSet (3,1)       ' turn on mux #2 & loop through the thermocouples
+      PortSet (1,1)       ' turn on mux #2 & loop through the thermocouples
       SubScan(0,Sec,6)
         PulsePort (4, 10000)      
         TCDiff(Tinitial(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
         PulsePort (4, 10000)
         tc = tc + 1
       NextSubScan
-      PortSet (3,0)       ' turn off mux #2
+      PortSet (1,0)       ' turn off mux #2
       Timer(0,Sec,2)      ' start the measurement timer
       PortSet (8,1)       ' turn heaters on 
       For i1 = 1 To 36                
@@ -850,8 +913,8 @@ BeginProg
         ' loop through the thermal conductivity probes
         tc = 1
         muxincr = 1
-        PortSet(3,1)  
-        SubScan(0,Sec,12)
+        PortSet(1,1)  
+        SubScan(0,Sec,6)
           PulsePort(4,10000)
           TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
           PulsePort(4,10000)
@@ -862,7 +925,7 @@ BeginProg
           power (tc) = sqVref * heater(tc)
           tc = tc + 1
         NextSubScan
-        PortSet(3,0)      
+        PortSet(1,0)      
         CallTable TableTC
       Next i1
       ' turn off current excitation
@@ -873,7 +936,73 @@ BeginProg
     EndIf
     
     
-            
+    '''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''
+    '' Met Instrumentation  '''''''
+    '''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' Measure the Anemometers          '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    PulseCount(ws,2,1,2,1,0.8,0.447)
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' Tipping Bucket Measurement       '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    PulseCount(summer_rain,1,17,2,0,0.1,0)
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' HMP155 Air Temperature / RH      '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    PortSet(2,1)
+    Delay(0,2,sec) 'allow sensor to stabilize  
+    PulsePort(4,10000)        
+    VoltDiff(at1m,1,mv2500,6,0,0,_60Hz,0.14,-80)
+    PulsePort(4,10000)        
+    VoltDiff(rh1m,1,mv2500,6,0,0,_60Hz,0.1,0)
+    PulsePort(4,10000)        
+    VoltDiff(at35m,1,mv2500,6,0,0,_60Hz,0.14,-80)
+    PulsePort(4,10000)        
+    VoltDiff(rh35m,1,mv2500,6,0,0,_60Hz,0.1,0)
+    DewPoint (dp1m,at1m,rh1m)
+    DewPoint (dp35m,at35m,rh35m)
+    
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' CNR4 4 Component Net Radiation   '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' Note, for fan on/off see control  ''''
+    ''' section at the top of this program '''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    BrHalf(CNR_Therm,1,mV2500C,7,Vx1,1,2500,True,0,_60Hz,1,0)  
+    CNR_Therm = CNR_Resistor  * (CNR_Therm / (1 - CNR_Therm) ) 
+    CNR_Temp_K = 1 / ( 1.029e-3 + 2.391e-4 * LN(CNR_Therm) + 1.568e-7*(LN(CNR_Therm))^3)
+    PulsePort(4,10000)            
+    VoltDiff (short_up,1,mV25C,1,True ,0,_60Hz,SW_UP_CF,0)       ' Measure SW UP
+    PulsePort(4,10000)        
+    VoltDiff (short_dn,1,mV25C,2,True ,0,_60Hz,SW_DN_CF,0)       ' Measure SW DN
+    PulsePort(4,10000)        
+    VoltDiff (long_up,1,mV25C,3,True ,0,_60Hz,LW_UP_CF,0)       ' Measure LW UP
+    long_up = long_up + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
+    PulsePort(4,10000)        
+    VoltDiff (long_dn,1,mV25C,5,True ,0,_60Hz,LW_DN_CF,0)       ' Measure LW DN
+    long_dn = long_dn + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
+    Rs_net = short_up - short_dn
+    Rl_net = long_up - long_dn
+    albedo = short_dn / short_up
+    Net_rad = Rs_net + Rl_net
+
+    PortSet(2,0)  
+
     '''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''
     '' Output to Storage  '''''''
@@ -882,6 +1011,6 @@ BeginProg
     CallTable Subsurface
     CallTable Snow
     CallTable Diagnostic
-    
+    CallTable Met  
   NextScan
 EndProg

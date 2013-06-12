@@ -1,0 +1,210 @@
+'Program name: C:\Users\rcbusey\Dropbox\logger_programs\barrow\GRID_SITE_2011-10-02.CR1
+'Date written: 5/4/2013
+'Transform Version: 0.5
+'Transform file: C:\Program Files (x86)\Campbellsci\LoggerNet\CR10X.TRN Version: 1.1
+'
+'This program was converted from C:\Users\rcbusey\Dropbox\logger_programs\barrow\GRID_SITE_2011-10-02.CSI
+'using Campbell Scientific's Transformer application.
+' 
+' Find the latest version of the program here:
+' C:\Users\rcbusey\Dropbox\logger_programs\barrow\
+' Or here:
+' https://github.com/frankohanlon/ngee
+' 
+' Everything not copyright Campbell Scientific is (c) Bob Busey; GPL V3 license:
+' GPL V3: http://www.gnu.org/licenses/gpl.html
+'  
+' This program: Version 2.0
+'
+' Latest Revision: Rewritten for CR1000 CRBasic from original CR10X language.
+' Contemplating adding on/off for mitigating MD485 power drain.
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''  SENSOR LIST   '''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Inside the Box Relative Humiidity
+' 29 Soil Moisture Sensors (mix of CS615 & CS616 I believe)
+' 58 Soil Thermistors
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''  LOGGER WIRING   ''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'
+' SE1 - MUX#1 COM ODD HI
+' SE2 - MUX#1 COM ODD LO
+' SE3 - 
+' SE4 - 
+' SE5 - MUX#2 COM H1, RESISTOR TO VX1
+' SE6 - MUX#2 COM L1, RESISTOR TO VX1
+' SE7 - MUX#2 COM H2, RESISTOR TO VX1
+' SE8 - MUX#2 COM L2, RESISTOR TO VX1
+' SE9
+' SE10
+' SE11
+' SE12 -- Box RH
+'
+' VX1 - RESISTORS TO SE3, SE4, SE5, SE6
+' VX2 -
+' VX3 - BLACK LW 237 #1, #2 Excitation
+' SignalGround - Purple LW 237 #1, #2 Ground, white rh
+' G  - Clear LW 237 #1, #2 Shield
+' C1 - MUX#1 CLK, MUX#2 CLK
+' C2 - MUX#1 RES, MUX#1 COM EVEN LO
+' C3 - MUX#2 RES
+' c4 - Internal RH CTRL (black wire)
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''' AM16/32B #1 in 4/16 Mode Wiring  '''''''''''''''''''''''''
+''' Soil Moisture Multiplexer        '''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' RES -- CR1000 C2
+' CLK -- CR1000 C1
+' COM ODD HI -- CR1000 SE1
+' COM ODD LO -- CR1000 SE2
+' COM EVEN HI -- CR1000 12V
+' COM EVEN LO -- CR1000 C2
+' ODD HI  -- CS615/CS616 (odd) Green Wire
+' ODD LO  -- CS615/CS616 (even) Green Wire
+' EVEN HI -- CS615/CS616 Red Wire
+' EVEN LO -- CS615/CS616 Orange Wire
+' Signal Ground -- CS615/CS616 Black & Clear Wires
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''' AM16/32B #2 in 4/16 Mode Wiring  '''''''''''''''''''''''''
+''' Thermistor Multiplexer           '''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' RES -- CR1000 C3
+' CLK -- CR1000 C1
+' COM ODD HI -- CR1000 SE3 & Precision Resistor to Vx1
+' COM ODD LO -- CR1000 SE4 & Precision Resistor to Vx1
+' COM EVEN HI -- CR1000 SE5 & Precision Resistor to Vx1
+' COM EVEN LO -- CR1000 SE6 & Precision Resistor to Vx1
+' ODD HI -- Thermistor 1 HI  (White Wire) (And Repeat for each Mux Group)
+' ODD LO -- Thermistor 2 HI (Red Wire) (And Repeat for each Mux Group)
+' EVEN HI -- Thermistor 3 HI (White Wire) (And Repeat for each Mux Group)
+' EVEN LO -- Thermistor 4 HI (Red Wire) (And Repeat for each Mux Group)
+' Signal Ground - Thermistors LO (Black and Green Wires)
+
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'' Declare Public Variables ''
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+Public Flag(8) As Boolean
+Public i1
+Public BATT_Volts
+Public Panel_Temp
+Public SM_Per(30)
+Public THERM(60)
+Public rhbox
+Public time(9)
+
+'''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''
+'' Define Data Output Tables ''
+'''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''
+    DataTable(SoilMoisture,True,-1)
+      DataInterval(0,30,Min,10)             
+      Average(29, SM_per, FP2, 0)
+    EndTable
+    
+    DataTable(SoilThermistors,true,-1)
+      DataInterval(0,60,Min,10)                   
+      Average(58, THERM, FP2, 0)
+    EndTable
+
+    DataTable (Diagnostic,1,-1)
+      DataInterval (0,60,Min,10)
+      Minimum (1,batt_volts,FP2,False,False)
+      Maximum (1,batt_volts,FP2,False,False)      
+      Average (1,Panel_temp,FP2,False)
+      Average(1, rhbox, FP2, 0)       
+    EndTable
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Main Program '''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+BeginProg
+  Scan(300,Sec, 3, 0)
+      '''''''''''''''''''''''''''''''''''''
+      '''''''''''''''''''''''''''''''''''''
+      '' MEASURE SOIL MOISTURE PROBES  ''''
+      '''''''''''''''''''''''''''''''''''''
+      '''''''''''''''''''''''''''''''''''''
+      RealTime(time)
+      ' check to see that it isn't winter... if it isn't then we'll measure subsurface sensors
+      ' at a higher frequency.
+      
+'      If time(9) > 120 AND time(9) <274 Then flag(1) = 1 
+'      If IfTime(0,30,min) Then flag(1) = 1
+ '     If flag(1) = 1 Then
+          ' TURN ON MULTIPLEXER #1
+          PortSet(2, 1)              
+          'LOOP THROUGH THE Multiplexer GROUPS
+          For i1 = 1 To 30 Step 2              
+             PulsePort(1,10000)              
+             Delay(0,400,MSEC)
+             PeriodAvg(SM_per(i1),1,mV250,1,0,0,100,10,1,0) ' First SM
+             PeriodAvg(SM_per(i1+1),1,mV250,2,0,0,100,10,1,0) 'Second SM
+          Next i1
+          'TURN OFF MUX #1
+          PortSet(2, 0)      
+                  
+          '''''''''''''''''''''''''''''''''''
+          '''''''''''''''''''''''''''''''''''
+          '' MEASURE SOIL THERMISTORS  ''''''
+          '''''''''''''''''''''''''''''''''''
+          '''''''''''''''''''''''''''''''''''
+          PortSet(3, 1)              
+          For i1 = 1 To 60 Step 4              
+            PulsePort(1,10000)              
+            Delay(0,100,MSEC)
+            '1/EXCITATION VOLTAGE (From instruction P4 parameter 8)       
+             BrHalf(THERM(i1),1, mV2500, 5, VX1, 1, 2500, False, 0, 250, 1, 0) 
+             BrHalf(THERM(i1+1),1, mV2500, 6, VX1, 1, 2500, False, 0, 250, 1, 0) 
+             BrHalf(THERM(i1+2),1, mV2500, 7, VX1, 1, 2500, False, 0, 250, 1, 0) 
+             BrHalf(THERM(i1+3),1, mV2500, 8, VX1, 1, 2500, False, 0, 250, 1, 0)
+             therm(i1) = 1 * therm(i1) / ( 1.0 - therm(i1) ) ' Need to multiply by Reference Resistor Value                   
+             therm(i1+1) = 1 * therm(i1+1) / ( 1.0 - therm(i1+1) ) ' Need to multiply by Reference Resistor Value
+             therm(i1+2) = 1 * therm(i1+2) / ( 1.0 - therm(i1+2) ) ' Need to multiply by Reference Resistor Value
+             therm(i1+3) = 1 * therm(i1+3) / ( 1.0 - therm(i1+3) ) ' Need to multiply by Reference Resistor Value
+          Next i1
+          PortSet(3, 0)   
+          flag(1)=0              
+  '    EndIf
+';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+';                               ;;
+'; MEASURE DIAGNOSTIC DATA       ;;
+';                               ;;
+';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      Battery(BATT_Volts)
+      PanelTemp(PANEL_TEMP, 250)
+      If IfTime(0,30,min) Then
+        PortSet(4, 1)              
+        Delay(0,100,MSEC)
+        VoltSe(rhbox, 1, autorange, 12, False, 0, 250, 1, 0) 
+        PortSet(4, 0)              
+      EndIf
+
+';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+';                               ;;
+'; SAVE VALUES TO FINAL STORAGE  ;;
+';                               ;;
+';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    CallTable SoilMoisture 
+    CallTable SoilThermistors
+    CallTable Diagnostic
+  NextScan
+EndProg
