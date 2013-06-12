@@ -27,6 +27,7 @@
 ' Inside the Box Relative Humiidity
 ' 29 Soil Moisture Sensors (mix of CS615 & CS616 I believe)
 ' 58 Soil Thermistors
+' 1 CS106, Vaisala PTB110
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -43,7 +44,7 @@
 ' SE7 - MUX#2 COM H2, RESISTOR TO VX1
 ' SE8 - MUX#2 COM L2, RESISTOR TO VX1
 ' SE9
-' SE10
+' SE10 - CS106 Blue Wire
 ' SE11
 ' SE12 -- Box RH
 '
@@ -55,7 +56,8 @@
 ' C1 - MUX#1 CLK, MUX#2 CLK
 ' C2 - MUX#1 RES, MUX#1 COM EVEN LO
 ' C3 - MUX#2 RES
-' c4 - Internal RH CTRL (black wire)
+' C4 - Internal RH CTRL (black wire)
+' C5 - CS106 Green Wire
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -93,6 +95,21 @@
 ' EVEN LO -- Thermistor 4 HI (Red Wire) (And Repeat for each Mux Group)
 ' Signal Ground - Thermistors LO (Black and Green Wires)
 
+'''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''
+'' Other Sensor Wiring  '''''''''''''
+'''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''
+'' CS106 Barometric Pressure
+'' Green Wire -- CR1000 C5
+'' Blue Wire -- CR1000 SE10
+'' Red Wire -- CR1000 12V
+'' Black Wire -- CR1000 G
+'' Yellow Wire -- CR1000 Signal Ground
+'' Clear Wire -- CR1000 Signal Ground
+
+
+
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
 '' Declare Public Variables ''
@@ -106,6 +123,7 @@ Public SM_Per(30)
 Public THERM(60)
 Public rhbox
 Public time(9)
+Public pressure
 
 '''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''
@@ -113,23 +131,27 @@ Public time(9)
 '''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''
     DataTable(SoilMoisture,True,-1)
-      DataInterval(0,30,Min,10)             
-      Average(29, SM_per, FP2, 0)
+        DataInterval(0,30,Min,10)             
+        Average(29, SM_per, FP2, 0)
     EndTable
     
     DataTable(SoilThermistors,true,-1)
-      DataInterval(0,60,Min,10)                   
-      Average(58, THERM, FP2, 0)
+        DataInterval(0,60,Min,10)                   
+        Average(58, THERM, FP2, 0)
     EndTable
 
     DataTable (Diagnostic,1,-1)
-      DataInterval (0,60,Min,10)
-      Minimum (1,batt_volts,FP2,False,False)
-      Maximum (1,batt_volts,FP2,False,False)      
-      Average (1,Panel_temp,FP2,False)
-      Average(1, rhbox, FP2, 0)       
+        DataInterval (0,60,Min,10)
+        Minimum (1,BATT_Volts,FP2,False,False)
+        Maximum (1,BATT_Volts,FP2,False,False)      
+        Average (1,Panel_Temp,FP2,False)
+        Average(1, rhbox, FP2, 0)       
     EndTable
 
+    DataTable(bp,1,-1)
+        DataInterval(0,60,min,10)
+        Sample(1,pressure,ieee4)
+    EndTable
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -137,7 +159,18 @@ Public time(9)
 '''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''
 BeginProg
-  Scan(300,Sec, 3, 0)
+    Scan(60,Sec, 3, 0)
+    
+      '''''''''''''''''''''''''''''''''''''
+      '''''''''''''''''''''''''''''''''''''
+      '' Measure Barometric Pressure  '''''
+      '''''''''''''''''''''''''''''''''''''
+      '''''''''''''''''''''''''''''''''''''
+      If IfTime(59,60,min) Then PortSet(5,1) 
+      If IfTime(0,60,min) Then
+          VoltSe(pressure,1,mv2500,10,false,0,_60Hz,0.24,500)
+          PortSet(5,0)
+      EndIf
       '''''''''''''''''''''''''''''''''''''
       '''''''''''''''''''''''''''''''''''''
       '' MEASURE SOIL MOISTURE PROBES  ''''
@@ -148,20 +181,19 @@ BeginProg
       ' at a higher frequency.
       
 '      If time(9) > 120 AND time(9) <274 Then flag(1) = 1 
-'      If IfTime(0,30,min) Then flag(1) = 1
- '     If flag(1) = 1 Then
+      If IfTime(0,30,min) Then 
           ' TURN ON MULTIPLEXER #1
           PortSet(2, 1)              
           'LOOP THROUGH THE Multiplexer GROUPS
           For i1 = 1 To 30 Step 2              
              PulsePort(1,10000)              
              Delay(0,400,MSEC)
-             PeriodAvg(SM_per(i1),1,mV250,1,0,0,100,10,1,0) ' First SM
-             PeriodAvg(SM_per(i1+1),1,mV250,2,0,0,100,10,1,0) 'Second SM
+             PeriodAvg(SM_Per(i1),1,mV250,1,0,0,100,10,1,0) ' First SM
+             PeriodAvg(SM_Per(i1+1),1,mV250,2,0,0,100,10,1,0) 'Second SM
           Next i1
           'TURN OFF MUX #1
           PortSet(2, 0)      
-                  
+      EndIf            
           '''''''''''''''''''''''''''''''''''
           '''''''''''''''''''''''''''''''''''
           '' MEASURE SOIL THERMISTORS  ''''''
@@ -176,13 +208,13 @@ BeginProg
              BrHalf(THERM(i1+1),1, mV2500, 6, VX1, 1, 2500, False, 0, 250, 1, 0) 
              BrHalf(THERM(i1+2),1, mV2500, 7, VX1, 1, 2500, False, 0, 250, 1, 0) 
              BrHalf(THERM(i1+3),1, mV2500, 8, VX1, 1, 2500, False, 0, 250, 1, 0)
-             therm(i1) = 1 * therm(i1) / ( 1.0 - therm(i1) ) ' Need to multiply by Reference Resistor Value                   
-             therm(i1+1) = 1 * therm(i1+1) / ( 1.0 - therm(i1+1) ) ' Need to multiply by Reference Resistor Value
-             therm(i1+2) = 1 * therm(i1+2) / ( 1.0 - therm(i1+2) ) ' Need to multiply by Reference Resistor Value
-             therm(i1+3) = 1 * therm(i1+3) / ( 1.0 - therm(i1+3) ) ' Need to multiply by Reference Resistor Value
+             THERM(i1) = 1 * THERM(i1) / ( 1.0 - THERM(i1) ) ' Need to multiply by Reference Resistor Value                   
+             THERM(i1+1) = 1 * THERM(i1+1) / ( 1.0 - THERM(i1+1) ) ' Need to multiply by Reference Resistor Value
+             THERM(i1+2) = 1 * THERM(i1+2) / ( 1.0 - THERM(i1+2) ) ' Need to multiply by Reference Resistor Value
+             THERM(i1+3) = 1 * THERM(i1+3) / ( 1.0 - THERM(i1+3) ) ' Need to multiply by Reference Resistor Value
           Next i1
           PortSet(3, 0)   
-          flag(1)=0              
+          Flag(1)=0              
   '    EndIf
 ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ';                               ;;
@@ -206,5 +238,6 @@ BeginProg
     CallTable SoilMoisture 
     CallTable SoilThermistors
     CallTable Diagnostic
+    CallTable bp
   NextScan
 EndProg
