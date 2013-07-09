@@ -469,7 +469,7 @@ Alias cnr4time(9) = thisDayOfYear
     Const SW_DN_CF = 1 / 13.43 * 1000   ' = (1 / 13.43 uV / (W/m^2) ) to units: W/m^2 / mV
     Const LW_UP_CF = 1 / 8.67 * 1000    ' = (1 / 8.67 uV / (W/m^2) ) to units: W/m^2 / mV
     Const LW_DN_CF = 1 / 8.45 * 1000    ' = (1 / 8.45 uV / (W/m^2) ) to units: W/m^2 / mV
-    Const CNR_Resistor = 9990    
+    Const CNR_Resistor = 1000    
 
 ''''''''''''''''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''''''''''''''''
@@ -859,7 +859,7 @@ BeginProg
       PortSet(6,1)
       Delay (0,5,Sec)
       k = 1
-      SubScan(0,uSec,9)
+      SubScan(0,uSec,6)
         SDI12Recorder (Hydra(k,1),5,k,"M!",1.0,0) 'read 9 soil parameters
         SDI12Recorder (HydraRaw(k,1),5,k,"M4!",1.0,0) 'read 9 soil parameters
         'reassign things to more useful variables
@@ -994,14 +994,14 @@ BeginProg
     CNR_Therm = CNR_Resistor  * (CNR_Therm / (1 - CNR_Therm) ) 
     CNR_Temp_K = 1 / ( 1.029e-3 + 2.391e-4 * LN(CNR_Therm) + 1.568e-7*(LN(CNR_Therm))^3)
     PulsePort(4,10000)            
-    VoltDiff (short_up,1,mV25C,1,True ,0,_60Hz,SW_UP_CF,0)       ' Measure SW UP
+    VoltDiff (short_up,1,mV25C,6,True ,0,_60Hz,SW_UP_CF,0)       ' Measure SW UP
     PulsePort(4,10000)        
-    VoltDiff (short_dn,1,mV25C,2,True ,0,_60Hz,SW_DN_CF,0)       ' Measure SW DN
+    VoltDiff (short_dn,1,mV25C,6,True ,0,_60Hz,SW_DN_CF,0)       ' Measure SW DN
     PulsePort(4,10000)        
-    VoltDiff (long_up,1,mV25C,3,True ,0,_60Hz,LW_UP_CF,0)       ' Measure LW UP
+    VoltDiff (long_up,1,mV25C,6,True ,0,_60Hz,LW_UP_CF,0)       ' Measure LW UP
     long_up = long_up + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
     PulsePort(4,10000)        
-    VoltDiff (long_dn,1,mV25C,5,True ,0,_60Hz,LW_DN_CF,0)       ' Measure LW DN
+    VoltDiff (long_dn,1,mV25C,6,True ,0,_60Hz,LW_DN_CF,0)       ' Measure LW DN
     long_dn = long_dn + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
     Rs_net = short_up - short_dn
     Rl_net = long_up - long_dn

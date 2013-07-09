@@ -1,0 +1,6 @@
+date
+echo "Program Signatures Values, match with the 7th field in the first line of the .dat file"
+python ~/Downloads/csi-signature "GRID_SITE.CR1"
+python ~/Downloads/csi-signature "ngee_intensive_site_A.CR1"
+python ~/Downloads/csi-signature "ngee_intensive_site_B.CR1"
+python ~/Downloads/csi-signature "ngee_intensive_site_C.CR1"

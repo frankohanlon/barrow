@@ -469,7 +469,7 @@ Alias cnr4time(9) = thisDayOfYear
     Const SW_DN_CF = 1 / 13.08 * 1000   ' = (1 / 13.08 uV / (W/m^2) ) to units: W/m^2 / mV
     Const LW_UP_CF = 1 / 13.46 * 1000    ' = (1 / 13.46 uV / (W/m^2) ) to units: W/m^2 / mV
     Const LW_DN_CF = 1 / 14.06 * 1000    ' = (1 / 14.06 uV / (W/m^2) ) to units: W/m^2 / mV
-    Const CNR_Resistor = 9990    
+    Const CNR_Resistor = 1000   
     
 
 ''''''''''''''''''''''''''''''''''''''''''''
@@ -776,7 +776,7 @@ BeginProg
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''   
     If TimeIntoInterval (0,10,Min) Then
-      PortSet(2,1)  'Multiplexer #1 ON
+      PortSet(1,1)  'Multiplexer #1 ON
       i = 1
       SubScan(0,uSec,32)
         PulsePort(4,10000)
@@ -789,7 +789,7 @@ BeginProg
         Thermistors_Mux1(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i+1)  'calculate temperature with correction for zero offset
         i = i+2      
       NextSubScan
-      PortSet(2,0 )  'Multiplexer #1 OFF
+      PortSet(1,0 )  'Multiplexer #1 OFF
     EndIf
     
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -798,7 +798,7 @@ BeginProg
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''        
     If TimeIntoInterval (0,10,Min) Then
-      PortSet(3,1)  'Multiplexer #2 ON
+      PortSet(1,1)  'Multiplexer #2 ON
       i = 1
       SubScan(0,uSec,12)
         ' Loop through the Thermal Conductivity Probes
@@ -815,7 +815,7 @@ BeginProg
         Thermistors_Mux2(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux2(i+1)  'calculate temperature with correction for zero offset
         i = i+2      
       NextSubScan
-      PortSet(3,0)  'Multiplexer #2 OFF
+      PortSet(1,0)  'Multiplexer #2 OFF
     EndIf
     '''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''    
@@ -823,7 +823,7 @@ BeginProg
     '''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''    
     If TimeIntoInterval(0,10,min) Then
-      PortSet(3,1)
+      PortSet(1,1)
       i = 1
       SubScan(0,usec,27)
         'loop through the thermal conductivity probes and thermistors
@@ -834,7 +834,7 @@ BeginProg
         VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
         i = i + 1
       NextSubScan
-      PortSet(3,0)
+      PortSet(1,0)
       ' Convert mV to W/m^2
       shf(1) = shf(1) * HFP01_cal_1
       shf(2) = shf(2) * HFP01_cal_2
@@ -870,7 +870,7 @@ BeginProg
       PortSet(6,1)
       Delay (0,5,Sec)
       k = 1
-      SubScan(0,uSec,9)
+      SubScan(0,uSec,6)
         SDI12Recorder (Hydra(k,1),5,k,"M!",1.0,0) 'read 9 soil parameters
         SDI12Recorder (HydraRaw(k,1),5,k,"M4!",1.0,0) 'read 9 soil parameters
         'reassign things to more useful variables
@@ -909,14 +909,14 @@ BeginProg
       sum = 2.72
       tc = 1
       ' steady state, iniital measurments
-      PortSet (3,1)       ' turn on mux #2 & loop through the thermocouples
+      PortSet (1,1)       ' turn on mux #2 & loop through the thermocouples
       SubScan(0,Sec,6)
         PulsePort (4, 10000)      
         TCDiff(Tinitial(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
         PulsePort (4, 10000)
         tc = tc + 1
       NextSubScan
-      PortSet (3,0)       ' turn off mux #2
+      PortSet (1,0)       ' turn off mux #2
       Timer(0,Sec,2)      ' start the measurement timer
       PortSet (8,1)       ' turn heaters on 
       For i1 = 1 To 36                
@@ -931,7 +931,7 @@ BeginProg
         ' loop through the thermal conductivity probes
         tc = 1
         muxincr = 1
-        PortSet(3,1)  
+        PortSet(1,1)  
         SubScan(0,Sec,6)
           PulsePort(4,10000)
           TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
@@ -943,7 +943,7 @@ BeginProg
           power (tc) = sqVref * heater(tc)
           tc = tc + 1
         NextSubScan
-        PortSet(3,0)      
+        PortSet(1,0)      
         CallTable TableTC
       Next i1
       ' turn off current excitation
@@ -1005,14 +1005,14 @@ BeginProg
     CNR_Therm = CNR_Resistor  * (CNR_Therm / (1 - CNR_Therm) ) 
     CNR_Temp_K = 1 / ( 1.029e-3 + 2.391e-4 * LN(CNR_Therm) + 1.568e-7*(LN(CNR_Therm))^3)
     PulsePort(4,10000)            
-    VoltDiff (short_up,1,mV25C,1,True ,0,_60Hz,SW_UP_CF,0)       ' Measure SW UP
+    VoltDiff (short_up,1,mV25C,6,True ,0,_60Hz,SW_UP_CF,0)       ' Measure SW UP
     PulsePort(4,10000)        
-    VoltDiff (short_dn,1,mV25C,2,True ,0,_60Hz,SW_DN_CF,0)       ' Measure SW DN
+    VoltDiff (short_dn,1,mV25C,6,True ,0,_60Hz,SW_DN_CF,0)       ' Measure SW DN
     PulsePort(4,10000)        
-    VoltDiff (long_up,1,mV25C,3,True ,0,_60Hz,LW_UP_CF,0)       ' Measure LW UP
+    VoltDiff (long_up,1,mV25C,6,True ,0,_60Hz,LW_UP_CF,0)       ' Measure LW UP
     long_up = long_up + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
     PulsePort(4,10000)        
-    VoltDiff (long_dn,1,mV25C,5,True ,0,_60Hz,LW_DN_CF,0)       ' Measure LW DN
+    VoltDiff (long_dn,1,mV25C,6,True ,0,_60Hz,LW_DN_CF,0)       ' Measure LW DN
     long_dn = long_dn + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
     Rs_net = short_up - short_dn
     Rl_net = long_up - long_dn

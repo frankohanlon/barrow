@@ -37,14 +37,14 @@
 '
 ' SE1 - MUX#1 COM ODD HI
 ' SE2 - MUX#1 COM ODD LO
-' SE3 - 
-' SE4 - 
+' SE3 - CS106 Blue Wire
+' SE4 - CS106 Yellow Wire
 ' SE5 - MUX#2 COM H1, RESISTOR TO VX1
 ' SE6 - MUX#2 COM L1, RESISTOR TO VX1
 ' SE7 - MUX#2 COM H2, RESISTOR TO VX1
 ' SE8 - MUX#2 COM L2, RESISTOR TO VX1
 ' SE9
-' SE10 - CS106 Blue Wire
+' SE10 - 
 ' SE11
 ' SE12 -- Box RH
 '
@@ -57,7 +57,7 @@
 ' C2 - MUX#1 RES, MUX#1 COM EVEN LO
 ' C3 - MUX#2 RES
 ' C4 - Internal RH CTRL (black wire)
-' C5 - CS106 Green Wire
+' C8 - CS106 Green Wire
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -101,11 +101,11 @@
 '''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''
 '' CS106 Barometric Pressure
-'' Green Wire -- CR1000 C5
-'' Blue Wire -- CR1000 SE10
+'' Green Wire -- CR1000 C8
+'' Blue Wire -- CR1000 SE3
 '' Red Wire -- CR1000 12V
 '' Black Wire -- CR1000 G
-'' Yellow Wire -- CR1000 Signal Ground
+'' Yellow Wire -- CR1000 SE4
 '' Clear Wire -- CR1000 Signal Ground
 
 
@@ -166,10 +166,10 @@ BeginProg
       '' Measure Barometric Pressure  '''''
       '''''''''''''''''''''''''''''''''''''
       '''''''''''''''''''''''''''''''''''''
-      If IfTime(59,60,min) Then PortSet(5,1) 
+      If IfTime(59,60,min) Then PortSet(8,1) 
       If IfTime(0,60,min) Then
-          VoltSe(pressure,1,mv2500,10,false,0,_60Hz,0.24,500)
-          PortSet(5,0)
+          VoltDiff(pressure,1,mv2500,2,false,0,_60Hz,0.24,500)
+          PortSet(8,0)
       EndIf
       '''''''''''''''''''''''''''''''''''''
       '''''''''''''''''''''''''''''''''''''
