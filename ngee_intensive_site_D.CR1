@@ -1,0 +1,1011 @@
+'CR1000 Series Datalogger
+' Bob Busey & Bill Cable for:
+' NGEE Barrow Intensive Site ________D________
+' Draft V1.0
+' Creation Dates: 2013-08-14
+'
+' Find the latest version of the program here:
+' C:\Users\rcbusey\Dropbox\logger_programs\barrow\
+' Or here:
+' https://github.com/frankohanlon/ngee
+' 
+' Everything not copyright Campbell Scientific is (c) Bob Busey or Bill Cable; GPL V3 license:
+' GPL V3: http://www.gnu.org/licenses/gpl.html
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''  FULL SENSOR LIST (As Built)   ''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' 2 -- HFP01 Heat Flux Plates
+' 6 -- Vitel HydraProbe II Probes
+' 6 -- East30 Sensors Thermal Conductivity Probes (thermistor model)
+' 5 -- GI 16 point thermistor strings
+' 6 -- GI thermistors to be installed adjacent to the soil moisture probes
+' 1 -- GI 5 point shallow borehole 
+' 1 -- CSC SR50A Snow Depth
+' 1 -- Kipp & Zonen CNR4 Net Radiometer
+' 2 -- Vaisala HMP155A AT/RH
+' 1 -- MetOne 014A Anemometers
+' 1 -- RM Young Anemometer
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''  LOGGER WIRING   ''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+' SE1  -- 
+' SE2  -- 
+' SE3  -- 
+' SE4  -- 
+' SE5  -- 
+' SE6  -- 
+' SE7  -- CNR4 Dome Temperature Signal
+' SE8  -- 
+' SE9  -- 
+' SE10 -- 
+' SE11 -- AM16/32B #3 COM ODD HI
+' SE12 -- AM16/32B #3 COM ODD LO
+' SE13 -- AM16/32B #1 COM ODD HI, Precision Resistor to VX2
+' SE14 -- AM16/32B #1 COM ODD LO, Precision Resistor to VX2
+' SE15 -- AM16/32B #2 COM ODD HI, Precision Resistor to VX3
+' SE16 -- AM16/32B #2 COM ODD LO, Precision Resistor to VX3
+
+' VX1 -- **CNR4 LW Dome Temperature Excitation**
+' VX2 -- Precision resistors to Mux 1 COM ODD HI, SE1, Mux 1 COM ODD LO, SE2
+' VX3 -- Precision resistors to Mux 2 COM ODD HI, SE1, Mux 2 COM ODD LO, SE2, 
+
+' P1 -- MetOne 1m WS+ (white wire)
+' P2 -- MetOne 3.5m WS+ (white wire)
+
+' C1 -- AM 16/32B #1 & #2 RES
+' C2 -- AM16/32B #3 RES & HMP155 CTRL
+' C3 -- CNR4 Heater/Fan CTRL
+' C4 -- AM16/32B #1, 2, & 3 -- CLK
+' C5 -- SDI 12 Devices: (6 Vitel Probes ) (Blue Wire) & (2 SR50A) (Green Wire)
+' C6 -- Vitel Probe CONTROL (Run to SW12V Control for Vitel Probes)
+' C7 -- TE525M Signal (white wire)
+' C8 -- Thermal Conductivity CTRL
+' SW12V -- Radio Power
+
+' Wiring that will need to be moved / extended to the SDM Interface:
+' C2 -- AM16/32B #1 -- RES
+' C3 -- AM16/32B #2 -- RES
+
+' Signal Ground -- HFP01 Shields (Clear Wire), 107 Probe SG (Purple Wire), SR50A 
+
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''   Sensor Wiring   ''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Thermistor Probes
+'therm  depth  wire color
+'  1     2       blue
+'  2     5       white
+'  3     10      orange
+'  4     15      white
+'  5     20      green
+'  6     25      white
+'  7     30      brown
+'  8     35      white
+'  9     40      slate
+'  10    50      white
+'  11    60      blue
+'  12    70      red
+'  13    80      orange
+'  14    100     red
+'  15    125     green
+'  16    150     red
+' signal ground  black & black
+
+' Shallow Borehole
+'therm  depth  wire color
+'  1      2.0    blue
+'  2      2.5    orange
+'  3      3.0    green
+'  4      3.5    white
+'  5      4.0    red
+' signal ground black
+
+' Soil Pit Thermistor Triples
+' therm  wire color
+'  1        white
+'  2        red
+'  3        green
+' signal ground black
+ 
+' HFP01
+' White Wire -- AM16/32B HI  28 & 29
+' Green Wire -- AM16/32B LO  28 & 29
+' Clear Wire -- AM16/32B Signal Ground
+
+' SR50A
+' Black Wire -- CR1000 Power Ground
+' Red Wire -- CR1000 +12V
+' Green Wire -- CR1000 C5
+' White Wire -- CR1000 Ground
+' Clear Wire -- CR1000 Ground
+
+' HydraProbe II (All)
+' Red Wire -- SW12V dongle +12V
+' Black Wire -- CR1000 Ground
+' Blue Wire -- CR1000 C5
+' SW12V for this sensor should be wired into C6
+
+' East30 Thermal Conductivity Sensors
+' Purple Wire -- AM16/32B #2 Odd group HI
+' Red Wire -- AM16/32B #2 Odd group LO
+' Blue Wire -- AM16/32B #2 Even Group HI
+' Gray Wire -- AM16/32B #2 Even Group LO, jumper to Signal Ground
+' Black Wire -- Current Excitation Module (one per channel)
+  
+
+' MetOne WS @ 1.4m
+' White Wire -- CR1000 P1
+' Black Wire -- CR1000 G
+
+' RM Young Marine 05103 @ 3.5m
+' White Wire -- CR1000 P2
+' Black Wire -- CR1000 G
+' 
+
+' Vaisala HMP155 Air Temperature & Relative Humidity @ 1.4m
+' Yellow Wire -- AM16/32B #3 1 HI
+' Blue Wire   -- AM16/32B #3 2 HI
+' White Wire  -- AM16/32B #3 1 LO & Jumper to 2 LO
+' Black Wire  -- Power Ground
+' Clear Wire  -- Power Ground
+' Red Wire    -- SW12V Power
+' SW12V CTRL -- CR1000 C2
+
+' Vaisala HMP155 Air Temperature & Relative Humidity @ 3.5m
+' Yellow Wire -- AM16/32B #3 3 HI
+' Blue Wire   -- AM16/32B #3 4 HI
+' White Wire  -- AM16/32B #3 3 LO & Jumper to 4 LO
+' Black Wire  -- Power Ground
+' Clear Wire  -- Power Ground
+' Red Wire    -- SW12V Power
+' SW12V CTRL -- CR1000 C2
+
+' Kipp & Zonen CNR4 Net Radiometer
+' CNR4 Left Yellow Cable
+' Pyranometer Upper Hi (Red Wire) -- AM16/32B #3 Group 5 Hi
+' Pyranometer Upper Lo (Blue Wire) -- AM16/32B #3 Group 5 Lo
+' Pyranometer Lower Hi (White Wire) -- AM16/32B #3 Group 6 Hi
+' Pyranometer Lower Lo (Black Wire) -- AM16/32B #3 Group 6 Lo
+' Pyrgeometer Upper Hi (Gray Wire) -- AM16/32B #3 Group 7 Hi
+' Pyrgeometer Upper Lo (Yellow Wire) -- AM16/32B #3 Group 7 Lo
+' Pyrgeometer Lower Hi (Brown Wire) -- AM16/32B #3 Group 8 Hi
+' Pyrgeometer Lower Lo (Green Wire) -- AM16/32B #3 Group 8 Lo
+' Shield -- AM16/32B Ground
+' CNR4 Right Yellow cable
+' Thermistor Hi (White Wire) -- CR1000 SE7
+' Thermistor Lo (Black Wire) -- CR1000 AG
+' Precision Resistor -- CR1000 SE7 to CR1000 VX1 
+' Shield -- CR1000 Ground
+
+
+' AM16/32B #1 in 2/32 Mode
+' RES - CR1000 C1
+' CLK - CR1000 C4
+' 12V  - CR1000 12V
+' G    - CR1000 G
+' COM ODD HI - CR1000 SE13,  Precision Resistor to CR1000 VX2
+' COM ODD LO - CR1000 SE14,  Precision Resistor to CR1000 VX2
+' AM16/32B GROUPS 1 - 8   -- Deep Thermistor Probe 1 -- TP1201
+' AM16/32B GROUPS 9 - 16  -- Deep Thermistor Probe 2 -- TP1215
+' AM16/32B GROUPS 17 - 24 -- Deep Thermistor Probe 3 -- TP1210
+' AM16/32B GROUPS 25 - 32 -- Deep Thermistor Probe 4 -- TP1206
+
+' AM16/32B #2 in 2/32 Mode
+' RES - CR1000 C1
+' CLK - CR1000 C4
+' 12V  - CR1000 12V
+' G    - CR1000 G
+' COM ODD HI - CR1000 SE15,  Precision Resistor to CR1000 VX3
+' COM ODD LO - CR1000 SE16,  Precision Resistor to CR1000 VX3
+' AM16/32B GROUP 1 & 2     -- Thermal Conductivity Pit 1 Probe 1 -- S/N 1157
+' AM16/32B GROUP 3 & 4     -- Thermal Conductivity Pit 1 Probe 2 -- S/N 1154
+' AM16/32B GROUP 5 & 6     -- Thermal Conductivity Pit 1 Probe 3 -- S/N 1182
+' AM16/32B GROUP 7 & 8     -- Thermal Conductivity Pit 2 Probe 1 -- S/N 1183
+' AM16/32B GROUP 9 & 10    -- Thermal Conductivity Pit 2 Probe 2 -- S/N 1191
+' AM16/32B GROUP 11 & 12   -- Thermal Conductivity Pit 2 Probe 3 -- S/N 1189
+' AM16/32B GROUP 13 - 20   -- Deep Thermistor Probe 5 -- TP1213
+' AM16/32B GROUP 21 - 23.1 -- Shallow Thermistor Probe -- TS1203
+' AM16/32B GROUP 23.2      -- Pit 1 Thermistor 1 -- TT1212
+' AM16/32B Group 24.1      -- Pit 1 Thermistor 2
+' AM16/32B Group 24.2      -- Pit 1 Thermistor 3
+' AM16/32B Group 25.1      -- Pit 2 Thermistor 1 -- TT1211
+' AM16/32B Group 25.2      -- Pit 2 Thermistor 2
+' AM16/32B Group 26.1      -- Pit 2 Thermistor 3
+' AM16/32B Group 26.2      -- Pit 3 Thermistor 1 -- Not installed Fall 2012
+' AM16/32B Group 27.1      -- Pit 3 Thermistor 2
+' AM16/32B Group 27.2      -- Pit 3 Thermistor 3
+' AM16/32B Group 28        -- HFP01 Pit 1 -- S/N 3861
+' AM16/32B Group 29        -- HFP01 Pit 2 -- S/N 3899
+' AM16/32B Group 30        -- HFP01 Pit 3
+' AM16/32B Group 31        -- 
+
+' AM16/32B #3 in 2/32 Mode
+' RES - CR1000 C2
+' CLK - CR1000 C4
+' 12V  - CR1000 12V
+' G    - CR1000 G
+' COM ODD HI - CR1000 SE11
+' COM ODD LO - CR1000 SE12
+' AM16/32B #3 GROUP 1      -- HMP155 1m AT
+' AM16/32B #3 GROUP 2      -- HMP155 1m RH
+' AM16/32B #3 GROUP 3      -- HMP155 3.5m AT
+' AM16/32B #3 Group 4      -- HMP155 3.5m RH
+' AM16/32B #3 Group 5      -- CNR4 SW UP
+' AM16/32B #3 Group 6      -- CNR4 SW DN
+' AM16/32B #3 Group 7      -- CNR4 LW UP
+' AM16/32B #3 Group 8      -- CNR4 LW DN
+
+
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'' Declare Public Variables ''
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+    ''' Diagnostic Variables
+    Public batt_volt
+    Public Ptemp
+    Public p_sig    
+    Public Flag(8) As Boolean
+    Public radioflag As Boolean  
+    Public commscomplete As Boolean
+    
+    ''' Thermistor Related Variables
+    Public Thermistors_Mux1(64), Thermistors_offset_Mux1(64)   ' thermistors on AM16/32B #1
+    Public Thermistors_Mux2(30), Thermistors_offset_Mux2(30)   ' thermistors on AM16/32B #2    
+    Public TP_Rt, TP_ratio      ' thermistor voltage to resistance variables
+    
+    ''' Vitel Probes
+    Public Hydra(9,9) '9 parameters from the Hydra Probe's II
+    Public Hydra_moisture(9), Hydra_temp(9), Hydra_cond(9), Hydra_real_perm(9), Hydra_img_perm(9)
+    Public HydraRaw(9,5) ' The voltage values
+    Public HydraA(9)   ' Voltage A
+    Public HydraB(9)   ' Voltage B
+    Public HydraC(9)   ' Voltage C
+    Public HydraD(9)   ' Voltage D
+    Public HydraE(9)   ' Voltage E
+    ''' Snow Related
+    Public Raw_Dist_1, Distance_1, SnowDepth_1, SR50A_height_1
+    Public Raw_Dist_2, Distance_2, SnowDepth_2, SR50A_height_2
+    Public AirTemp
+    Public hTime
+    
+    ''' Heat Flux
+    Public shf(3)
+    
+    ''' Thermal Conductivity    
+    Public generator
+    Public expgener
+    Public sum
+    Public tc
+    Public Vref
+    Public sqVref
+    Public Tinitial(6)
+    Public Theat(6)
+    Public time (6)
+    Public Trise (6)
+    Public power(6)
+    Public heater(6)
+    Public measureTC As Boolean
+
+    ''' Extras
+    Dim i,j,k 
+    Public muxincr
+    Public i1
+    Public i2
+    
+    ''' Met Variable Declaration
+    Public ws(2)
+    Public at1m, dp1m, rh1m
+    Public at35m, dp35m, rh35m
+    Public summer_rain
+    Public short_up, short_dn
+    Public long_up, long_dn
+    Public CNR_Therm
+    Public CNR_Temp_K
+    Public long_up_corr
+    Public long_dn_corr
+    Public Rs_net
+    Public Rl_net
+    Public albedo
+    Public Net_rad
+    Public cnr4time(9)
+    
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'' Aliases  ''''''''''''''''''
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'Alias Thermisters_Mux1
+Alias Thermistors_Mux1( 1) = Deep_Probe_1_Thermistor_1
+Alias Thermistors_Mux1( 2) = Deep_Probe_1_Thermistor_2
+Alias Thermistors_Mux1( 3) = Deep_Probe_1_Thermistor_3
+Alias Thermistors_Mux1( 4) = Deep_Probe_1_Thermistor_4
+Alias Thermistors_Mux1( 5) = Deep_Probe_1_Thermistor_5
+Alias Thermistors_Mux1( 6) = Deep_Probe_1_Thermistor_6
+Alias Thermistors_Mux1( 7) = Deep_Probe_1_Thermistor_7
+Alias Thermistors_Mux1( 8) = Deep_Probe_1_Thermistor_8
+Alias Thermistors_Mux1( 9) = Deep_Probe_1_Thermistor_9
+Alias Thermistors_Mux1( 10) = Deep_Probe_1_Thermistor_10
+Alias Thermistors_Mux1( 11) = Deep_Probe_1_Thermistor_11
+Alias Thermistors_Mux1( 12) = Deep_Probe_1_Thermistor_12
+Alias Thermistors_Mux1( 13) = Deep_Probe_1_Thermistor_13
+Alias Thermistors_Mux1( 14) = Deep_Probe_1_Thermistor_14
+Alias Thermistors_Mux1( 15) = Deep_Probe_1_Thermistor_15
+Alias Thermistors_Mux1( 16) = Deep_Probe_1_Thermistor_16
+
+Alias Thermistors_Mux1( 17) = Deep_Probe_2_Thermistor_1
+Alias Thermistors_Mux1( 18) = Deep_Probe_2_Thermistor_2
+Alias Thermistors_Mux1( 19) = Deep_Probe_2_Thermistor_3
+Alias Thermistors_Mux1( 20) = Deep_Probe_2_Thermistor_4
+Alias Thermistors_Mux1( 21) = Deep_Probe_2_Thermistor_5
+Alias Thermistors_Mux1( 22) = Deep_Probe_2_Thermistor_6
+Alias Thermistors_Mux1( 23) = Deep_Probe_2_Thermistor_7
+Alias Thermistors_Mux1( 24) = Deep_Probe_2_Thermistor_8
+Alias Thermistors_Mux1( 25) = Deep_Probe_2_Thermistor_9
+Alias Thermistors_Mux1( 26) = Deep_Probe_2_Thermistor_10
+Alias Thermistors_Mux1( 27) = Deep_Probe_2_Thermistor_11
+Alias Thermistors_Mux1( 28) = Deep_Probe_2_Thermistor_12
+Alias Thermistors_Mux1( 29) = Deep_Probe_2_Thermistor_13
+Alias Thermistors_Mux1( 30) = Deep_Probe_2_Thermistor_14
+Alias Thermistors_Mux1( 31) = Deep_Probe_2_Thermistor_15
+Alias Thermistors_Mux1( 32) = Deep_Probe_2_Thermistor_16
+
+Alias Thermistors_Mux1( 33) = Deep_Probe_3_Thermistor_1
+Alias Thermistors_Mux1( 34) = Deep_Probe_3_Thermistor_2
+Alias Thermistors_Mux1( 35) = Deep_Probe_3_Thermistor_3
+Alias Thermistors_Mux1( 36) = Deep_Probe_3_Thermistor_4
+Alias Thermistors_Mux1( 37) = Deep_Probe_3_Thermistor_5
+Alias Thermistors_Mux1( 38) = Deep_Probe_3_Thermistor_6
+Alias Thermistors_Mux1( 39) = Deep_Probe_3_Thermistor_7
+Alias Thermistors_Mux1( 40) = Deep_Probe_3_Thermistor_8
+Alias Thermistors_Mux1( 41) = Deep_Probe_3_Thermistor_9
+Alias Thermistors_Mux1( 42) = Deep_Probe_3_Thermistor_10
+Alias Thermistors_Mux1( 43) = Deep_Probe_3_Thermistor_11
+Alias Thermistors_Mux1( 44) = Deep_Probe_3_Thermistor_12
+Alias Thermistors_Mux1( 45) = Deep_Probe_3_Thermistor_13
+Alias Thermistors_Mux1( 46) = Deep_Probe_3_Thermistor_14
+Alias Thermistors_Mux1( 47) = Deep_Probe_3_Thermistor_15
+Alias Thermistors_Mux1( 48) = Deep_Probe_3_Thermistor_16
+
+Alias Thermistors_Mux1( 49) = Deep_Probe_4_Thermistor_1
+Alias Thermistors_Mux1( 50) = Deep_Probe_4_Thermistor_2
+Alias Thermistors_Mux1( 51) = Deep_Probe_4_Thermistor_3
+Alias Thermistors_Mux1( 52) = Deep_Probe_4_Thermistor_4
+Alias Thermistors_Mux1( 53) = Deep_Probe_4_Thermistor_5
+Alias Thermistors_Mux1( 54) = Deep_Probe_4_Thermistor_6
+Alias Thermistors_Mux1( 55) = Deep_Probe_4_Thermistor_7
+Alias Thermistors_Mux1( 56) = Deep_Probe_4_Thermistor_8
+Alias Thermistors_Mux1( 57) = Deep_Probe_4_Thermistor_9
+Alias Thermistors_Mux1( 58) = Deep_Probe_4_Thermistor_10
+Alias Thermistors_Mux1( 59) = Deep_Probe_4_Thermistor_11
+Alias Thermistors_Mux1( 60) = Deep_Probe_4_Thermistor_12
+Alias Thermistors_Mux1( 61) = Deep_Probe_4_Thermistor_13
+Alias Thermistors_Mux1( 62) = Deep_Probe_4_Thermistor_14
+Alias Thermistors_Mux1( 63) = Deep_Probe_4_Thermistor_15
+Alias Thermistors_Mux1( 64) = Deep_Probe_4_Thermistor_16
+
+'Alias Thermisters_Mux2
+Alias Thermistors_Mux2( 1) = Deep_Probe_5_Thermistor_1
+Alias Thermistors_Mux2( 2) = Deep_Probe_5_Thermistor_2
+Alias Thermistors_Mux2( 3) = Deep_Probe_5_Thermistor_3
+Alias Thermistors_Mux2( 4) = Deep_Probe_5_Thermistor_4
+Alias Thermistors_Mux2( 5) = Deep_Probe_5_Thermistor_5
+Alias Thermistors_Mux2( 6) = Deep_Probe_5_Thermistor_6
+Alias Thermistors_Mux2( 7) = Deep_Probe_5_Thermistor_7
+Alias Thermistors_Mux2( 8) = Deep_Probe_5_Thermistor_8
+Alias Thermistors_Mux2( 9) = Deep_Probe_5_Thermistor_9
+Alias Thermistors_Mux2( 10) = Deep_Probe_5_Thermistor_10
+Alias Thermistors_Mux2( 11) = Deep_Probe_5_Thermistor_11
+Alias Thermistors_Mux2( 12) = Deep_Probe_5_Thermistor_12
+Alias Thermistors_Mux2( 13) = Deep_Probe_5_Thermistor_13
+Alias Thermistors_Mux2( 14) = Deep_Probe_5_Thermistor_14
+Alias Thermistors_Mux2( 15) = Deep_Probe_5_Thermistor_15
+Alias Thermistors_Mux2( 16) = Deep_Probe_5_Thermistor_16
+
+Alias Thermistors_Mux2( 17) = Shallow_Hole_Thermistor_1
+Alias Thermistors_Mux2( 18) = Shallow_Hole_Thermistor_2
+Alias Thermistors_Mux2( 19) = Shallow_Hole_Thermistor_3
+Alias Thermistors_Mux2( 20) = Shallow_Hole_Thermistor_4
+Alias Thermistors_Mux2( 21) = Shallow_Hole_Thermistor_5
+
+Alias Thermistors_Mux2( 22) = Pit_1_Thermistor_1
+Alias Thermistors_Mux2( 23) = Pit_1_Thermistor_2
+Alias Thermistors_Mux2( 24) = Pit_1_Thermistor_3
+
+Alias Thermistors_Mux2( 25) = Pit_2_Thermistor_1
+Alias Thermistors_Mux2( 26) = Pit_2_Thermistor_2
+Alias Thermistors_Mux2( 27) = Pit_2_Thermistor_3
+
+Alias Thermistors_Mux2( 28) = Pit_3_Thermistor_1
+Alias Thermistors_Mux2( 29) = Pit_3_Thermistor_2
+Alias Thermistors_Mux2( 30) = Pit_3_Thermistor_3
+
+Alias shf(1) = Pit_1_HeatFlux
+Alias shf(2) = Pit_2_HeatFlux
+Alias shf(3) = Pit_3_HeatFlux
+
+Alias ws(1) = ws1m
+Alias ws(2) = ws35m
+
+Alias cnr4time(4) = thisHour
+Alias cnr4time(5) = thisMinute
+Alias cnr4time(9) = thisDayOfYear
+
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+'' Declare Constants '''''''''
+''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''
+    'Steinhart-Hart Fit Constants
+    Const C1 = 0.0011281
+    Const C2 = 0.0002343
+    Const C3 = 0.000000086946
+    Const Rf = 25000  ' Resistor Value
+    Const HFP01_cal_1 = 1 / (62.7 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const HFP01_cal_2 = 1 / (64.6 / 1000)   'multiplier for HFP01, sensitivity (around 60 uV/Wm-2)    
+    Const SW_UP_CF = 1 / 14.22 * 1000   ' = (1 / 14.22 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const SW_DN_CF = 1 / 13.43 * 1000   ' = (1 / 13.43 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const LW_UP_CF = 1 / 8.67 * 1000    ' = (1 / 8.67 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const LW_DN_CF = 1 / 8.45 * 1000    ' = (1 / 8.45 uV / (W/m^2) ) to units: W/m^2 / mV
+    Const CNR_Resistor = 1000    
+
+''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''
+'' Define Units for the Output Variables  ''
+''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''
+    Units batt_volt = Volts DC
+    Units Ptemp = Degrees Celsius
+    Units SnowDepth_1 = Centimeters
+    Units SnowDepth_2 = Centimeters        
+    Units Thermistors_Mux1 = Degrees Celsius
+    Units Thermistors_Mux2 = Degrees Celsius
+    Units AirTemp = Degrees Celsius   
+    Units shf = Watts / meter^2 
+    ' Could optionally add units for the HydraProbes.
+    Units ws1m = meters/second
+    Units ws35m = meters/second
+    Units at1m = Degrees Celsius
+    Units at35m = Degrees Celsius
+    Units dp1m = Degrees Celsius
+    Units dp35m = Degrees Celsius
+    Units rh1m = Percent
+    Units rh35m = Percent
+    Units summer_rain = millimeters
+    Units short_up = Watts / meter^2
+    Units short_dn = Watts / meter^2
+    Units long_up = Watts / meter^2
+    Units long_dn = Watts / meter^2
+    Units CNR_Temp_K = Degrees Kelvin
+    Units Rs_net = Watts / meter^2
+    Units Rl_net = Watts / meter^2
+    Units albedo = Percent
+    Units Net_rad = Watts / meter^2
+
+'''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''
+'' Define Data Output Tables ''
+'''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''
+
+    DataTable (Diagnostic,1,-1)
+      DataInterval (0,1440,Min,10)
+      Minimum (1,batt_volt,FP2,False,False)
+      Minimum (1,Ptemp,FP2,False,False)
+      Average (1,Ptemp,FP2,False)
+      Maximum (1,Ptemp,FP2,False,False)
+      Sample (1,p_sig,IEEE4)        
+    EndTable
+    
+    DataTable(Subsurface,true,-1)
+      DataInterval(0,60,Min,10)
+      Minimum(1,batt_volt,FP2,False,False)
+      Average(1,Ptemp,FP2, 0)      
+      ' Thermistors
+      Average(64,Thermistors_Mux1(),FP2,False)   
+      Average(30,Thermistors_Mux2(),FP2,False)     
+      'Hydra Probe's
+      Sample(6,Hydra_moisture(),FP2)  'soil moisture, VWC
+      Sample(6,Hydra_temp(),FP2)  'soil temperature, deg. C
+      Sample(6,Hydra_cond(),FP2)  'soil conductivity, Siemens / Meter
+      Sample(6,Hydra_real_perm(),FP2)  'real dielectric permittivity
+      Sample(6,Hydra_img_perm(),FP2)  'imaginary dielectric permittivity
+      Sample(6,HydraA(),FP2)   ' Hydra Probe Voltage A
+      Sample(6,HydraB(),FP2)   ' Hydra Probe Voltage B
+      Sample(6,HydraC(),FP2)   ' Hydra Probe Voltage C
+      Sample(6,HydraD(),FP2)   ' Hydra Probe Voltage D
+      Sample(6,HydraE(),FP2)   ' Hydra Probe Voltage E                        
+      'soil heat flux plate
+      Average(2,shf(),FP2,0) 
+      ' snow 
+      Average(1,AirTemp,fp2,false)
+      Sample(1,SnowDepth_1,FP2)
+      Sample(1,SnowDepth_2,FP2)        
+    EndTable
+
+    DataTable(Snow,true,-1)
+      DataInterval(0,5,Min,10)
+      Sample(1,SnowDepth_1,FP2)
+      Sample (1,Distance_1,FP2)
+      Sample(1,SnowDepth_2,FP2)
+      Sample (1,Distance_2,FP2)
+    EndTable
+    
+    DataTable(TableTC,true,-1)
+      Sample(6, time,IEEE4)
+      Sample(6, Trise, FP2)
+      Sample(6, power, FP2)
+    EndTable
+
+    DataTable(Met,true,-1)
+      DataInterval(0,60,Min,10)
+      Average(1,at1m,fp2,0)
+      Average(1,at35m,fp2,0)
+      Average(1,dp1m,fp2,0)
+      Average(1,dp35m,fp2,0)
+      Sample(1,rh1m,fp2)
+      Sample(1,rh35m,fp2)
+      Average(1,ws1m,fp2,0)
+      Average(1,ws35m,fp2,0)
+      Totalize(1,summer_rain,fp2,false)
+      Average(1,short_up,fp2,0)
+      Average(1,short_dn,fp2,0)
+      Average(1,long_up,fp2,0)
+      Average(1,long_dn,fp2,0)
+      Average(1,albedo,fp2,0)
+      Average(1,Net_rad,fp2,0)
+    EndTable
+    
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Main Program '''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+BeginProg
+
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  '' Initiazlize All of the offest parameters  '''''''
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''
+  Signature
+  ' Snow
+  SR50A_height_1 = 186.9  ' units are centimeters; adjusted 2013-06-12
+  SR50A_height_2 = 143.6  ' units are centimeters; adjusted 2013-06-12
+  commscomplete = false
+  
+  ' Thermistor offsets  
+  Thermistors_offset_Mux1 ( 1  ) = 0.037 '' Bore Hole - 1 Thermistor _1_ TP1201
+  Thermistors_offset_Mux1 ( 2  ) = 0.037 '' Bore Hole - 1 Thermistor _2_ TP1201
+  Thermistors_offset_Mux1 ( 3  ) = -0.023 '' Bore Hole - 1 Thermistor _3_ TP1201
+  Thermistors_offset_Mux1 ( 4  ) = 0.047 '' Bore Hole - 1 Thermistor _4_ TP1201
+  Thermistors_offset_Mux1 ( 5  ) = 0.054 '' Bore Hole - 1 Thermistor _5_ TP1201
+  Thermistors_offset_Mux1 ( 6  ) = 0.014 '' Bore Hole - 1 Thermistor _6_ TP1201
+  Thermistors_offset_Mux1 ( 7  ) = 0.081 '' Bore Hole - 1 Thermistor _7_ TP1201
+  Thermistors_offset_Mux1 ( 8  ) = 0.092 '' Bore Hole - 1 Thermistor _8_ TP1201
+  Thermistors_offset_Mux1 ( 9  ) = 0.048 '' Bore Hole - 1 Thermistor _9_ TP1201
+  Thermistors_offset_Mux1 ( 10 ) = 0.003 '' Bore Hole - 1 Thermistor _10_ TP1201
+  Thermistors_offset_Mux1 ( 11 ) = 0.018 '' Bore Hole - 1 Thermistor _11_ TP1201
+  Thermistors_offset_Mux1 ( 12 ) = 0.040 '' Bore Hole - 1 Thermistor _12_ TP1201
+  Thermistors_offset_Mux1 ( 13 ) = 0.006 '' Bore Hole - 1 Thermistor _13_ TP1201
+  Thermistors_offset_Mux1 ( 14 ) = 0.072 '' Bore Hole - 1 Thermistor _14_ TP1201
+  Thermistors_offset_Mux1 ( 15 ) = 0.047 '' Bore Hole - 1 Thermistor _15_ TP1201
+  Thermistors_offset_Mux1 ( 16 ) = 0.024 '' Bore Hole - 1 Thermistor _16_ TP1201
+      
+  Thermistors_offset_Mux1 ( 17 ) = 0.032 '' Bore Hole - 2 Thermistor _1_ TP1215
+  Thermistors_offset_Mux1 ( 18 ) = 0.047 '' Bore Hole - 2 Thermistor _2_ TP1215
+  Thermistors_offset_Mux1 ( 19 ) = 0.037 '' Bore Hole - 2 Thermistor _3_ TP1215
+  Thermistors_offset_Mux1 ( 20 ) = -0.005 '' Bore Hole - 2 Thermistor _4_ TP1215
+  Thermistors_offset_Mux1 ( 21 ) = 0.038 '' Bore Hole - 2 Thermistor _5_ TP1215
+  Thermistors_offset_Mux1 ( 22 ) = -0.004 '' Bore Hole - 2 Thermistor _6_ TP1215
+  Thermistors_offset_Mux1 ( 23 ) = 0.032 '' Bore Hole - 2 Thermistor _7_ TP1215
+  Thermistors_offset_Mux1 ( 24 ) = -0.005 '' Bore Hole - 2 Thermistor _8_ TP1215
+  Thermistors_offset_Mux1 ( 25 ) = 0.087 '' Bore Hole - 2 Thermistor _9_ TP1215
+  Thermistors_offset_Mux1 ( 26 ) = 0.036 '' Bore Hole - 2 Thermistor _10_ TP1215
+  Thermistors_offset_Mux1 ( 27 ) = 0.046 '' Bore Hole - 2 Thermistor _11_ TP1215
+  Thermistors_offset_Mux1 ( 28 ) = 0.046 '' Bore Hole - 2 Thermistor _12_ TP1215
+  Thermistors_offset_Mux1 ( 29 ) = 0.036 '' Bore Hole - 2 Thermistor _13_ TP1215
+  Thermistors_offset_Mux1 ( 30 ) = 0.039 '' Bore Hole - 2 Thermistor _14_ TP1215
+  Thermistors_offset_Mux1 ( 31 ) = 0.069 '' Bore Hole - 2 Thermistor _15_ TP1215
+  Thermistors_offset_Mux1 ( 32 ) = 0.046 '' Bore Hole - 2 Thermistor _16_ TP1215
+      
+  Thermistors_offset_Mux1 ( 33 ) = 0.035 '' Bore Hole - 3 Thermistor _1_ TP1210
+  Thermistors_offset_Mux1 ( 34 ) = 0.078 '' Bore Hole - 3 Thermistor _2_ TP1210
+  Thermistors_offset_Mux1 ( 35 ) = 0.069 '' Bore Hole - 3 Thermistor _3_ TP1210
+  Thermistors_offset_Mux1 ( 36 ) = 0.060 '' Bore Hole - 3 Thermistor _4_ TP1210
+  Thermistors_offset_Mux1 ( 37 ) = 0.032 '' Bore Hole - 3 Thermistor _5_ TP1210
+  Thermistors_offset_Mux1 ( 38 ) = 0.007 '' Bore Hole - 3 Thermistor _6_ TP1210
+  Thermistors_offset_Mux1 ( 39 ) = 0.046 '' Bore Hole - 3 Thermistor _7_ TP1210
+  Thermistors_offset_Mux1 ( 40 ) = 0.004 '' Bore Hole - 3 Thermistor _8_ TP1210
+  Thermistors_offset_Mux1 ( 41 ) = 0.045 '' Bore Hole - 3 Thermistor _9_ TP1210
+  Thermistors_offset_Mux1 ( 42 ) = 0.057 '' Bore Hole - 3 Thermistor _10_ TP1210
+  Thermistors_offset_Mux1 ( 43 ) = 0.080 '' Bore Hole - 3 Thermistor _11_ TP1210
+  Thermistors_offset_Mux1 ( 44 ) = 0.067 '' Bore Hole - 3 Thermistor _12_ TP1210
+  Thermistors_offset_Mux1 ( 45 ) = 0.003 '' Bore Hole - 3 Thermistor _13_ TP1210
+  Thermistors_offset_Mux1 ( 46 ) = 0.025 '' Bore Hole - 3 Thermistor _14_ TP1210
+  Thermistors_offset_Mux1 ( 47 ) = 0.023 '' Bore Hole - 3 Thermistor _15_ TP1210
+  Thermistors_offset_Mux1 ( 48 ) = 0.037 '' Bore Hole - 3 Thermistor _16_ TP1210
+      
+  Thermistors_offset_Mux1 ( 49 ) = 0.002 '' Bore Hole - 4 Thermistor _1_ TP1206
+  Thermistors_offset_Mux1 ( 50 ) = 0.119 '' Bore Hole - 4 Thermistor _2_ TP1206
+  Thermistors_offset_Mux1 ( 51 ) = 0.081 '' Bore Hole - 4 Thermistor _3_ TP1206
+  Thermistors_offset_Mux1 ( 52 ) = 0.038 '' Bore Hole - 4 Thermistor _4_ TP1206
+  Thermistors_offset_Mux1 ( 53 ) = 0.058 '' Bore Hole - 4 Thermistor _5_ TP1206
+  Thermistors_offset_Mux1 ( 54 ) = 0.043 '' Bore Hole - 4 Thermistor _6_ TP1206
+  Thermistors_offset_Mux1 ( 55 ) = 0.036 '' Bore Hole - 4 Thermistor _7_ TP1206
+  Thermistors_offset_Mux1 ( 56 ) = 0.019 '' Bore Hole - 4 Thermistor _8_ TP1206
+  Thermistors_offset_Mux1 ( 57 ) = 0.006 '' Bore Hole - 4 Thermistor _9_ TP1206
+  Thermistors_offset_Mux1 ( 58 ) = 0.044 '' Bore Hole - 4 Thermistor _10_ TP1206
+  Thermistors_offset_Mux1 ( 59 ) = 0.038 '' Bore Hole - 4 Thermistor _11_ TP1206
+  Thermistors_offset_Mux1 ( 60 ) = 0.046 '' Bore Hole - 4 Thermistor _12_ TP1206
+  Thermistors_offset_Mux1 ( 61 ) = 0.005 '' Bore Hole - 4 Thermistor _13_ TP1206
+  Thermistors_offset_Mux1 ( 62 ) = 0.025 '' Bore Hole - 4 Thermistor _14_ TP1206
+  Thermistors_offset_Mux1 ( 63 ) = 0.028 '' Bore Hole - 4 Thermistor _15_ TP1206
+  Thermistors_offset_Mux1 ( 64 ) = 0.047 '' Bore Hole - 4 Thermistor _16_ TP1206
+      
+  Thermistors_offset_Mux2 ( 1 ) = 0.046 '' Bore Hole - 5 Thermistor _1_ TP1213
+  Thermistors_offset_Mux2 ( 2 ) = 0.046 '' Bore Hole - 5 Thermistor _2_ TP1213
+  Thermistors_offset_Mux2 ( 3 ) = 0.013 '' Bore Hole - 5 Thermistor _3_ TP1213
+  Thermistors_offset_Mux2 ( 4 ) = 0.048 '' Bore Hole - 5 Thermistor _4_ TP1213
+  Thermistors_offset_Mux2 ( 5 ) = 0.046 '' Bore Hole - 5 Thermistor _5_ TP1213
+  Thermistors_offset_Mux2 ( 6 ) = 0.036 '' Bore Hole - 5 Thermistor _6_ TP1213
+  Thermistors_offset_Mux2 ( 7 ) = 0.007 '' Bore Hole - 5 Thermistor _7_ TP1213
+  Thermistors_offset_Mux2 ( 8 ) = 0.002 '' Bore Hole - 5 Thermistor _8_ TP1213
+  Thermistors_offset_Mux2 ( 9 ) = 0.019 '' Bore Hole - 5 Thermistor _9_ TP1213
+  Thermistors_offset_Mux2 ( 10 ) = 0.041 '' Bore Hole - 5 Thermistor _10_ TP1213
+  Thermistors_offset_Mux2 ( 11 ) = 0.024 '' Bore Hole - 5 Thermistor _11_ TP1213
+  Thermistors_offset_Mux2 ( 12 ) = -0.039 '' Bore Hole - 5 Thermistor _12_ TP1213
+  Thermistors_offset_Mux2 ( 13 ) = -0.014 '' Bore Hole - 5 Thermistor _13_ TP1213
+  Thermistors_offset_Mux2 ( 14 ) = 0.070 '' Bore Hole - 5 Thermistor _14_ TP1213
+  Thermistors_offset_Mux2 ( 15 ) = 0.046 '' Bore Hole - 5 Thermistor _15_ TP1213
+  Thermistors_offset_Mux2 ( 16 ) = 0.024 '' Bore Hole - 5 Thermistor _16_ TP1213
+      
+  Thermistors_offset_Mux2 ( 17 ) = 0.011 '' Shallow Hole - Thermistor _1_ TS1203
+  Thermistors_offset_Mux2 ( 18 ) = -0.020 '' Shallow Hole - Thermistor _2_ TS1203
+  Thermistors_offset_Mux2 ( 19 ) = -0.003 '' Shallow Hole - Thermistor _3_ TS1203
+  Thermistors_offset_Mux2 ( 20 ) = -0.028 '' Shallow Hole - Thermistor _4_ TS1203
+  Thermistors_offset_Mux2 ( 21 ) = 0.011 '' Shallow Hole - Thermistor _5_ TS1203
+      
+  Thermistors_offset_Mux2 ( 22 ) = 0.048 '' Pit 1 Thermistor _1 _ TT1212
+  Thermistors_offset_Mux2 ( 23 ) = 0.068 '' Pit 1 Thermistor _2 _ TT1212
+  Thermistors_offset_Mux2 ( 24 ) = 0.045 '' Pit 1 Thermistor _3 _ TT1212
+      
+  Thermistors_offset_Mux2 ( 25 ) = 0.037 '' Pit 2 Thermistor _1 _ TT1211
+  Thermistors_offset_Mux2 ( 26 ) = 0.045 '' Pit 2 Thermistor _2 _ TT1211
+  Thermistors_offset_Mux2 ( 27 ) = 0.047 '' Pit 2 Thermistor _3 _ TT1211
+      
+  Thermistors_offset_Mux2 ( 28 ) = 0 '' Pit 3 Thermistor _1 _ n/a
+  Thermistors_offset_Mux2 ( 29 ) = 0 '' Pit 3 Thermistor _2 _ n/a
+  Thermistors_offset_Mux2 ( 30 ) = 0 '' Pit 3 Thermistor _3 _ n/a
+
+
+  heater(1) = 1041.5  '' East 30 Pit 1 - Heater #1 Resistance
+   heater(2) = 1041.5  '' East 30 Pit 1 - Heater #2 Resistance
+  heater(3) = 1041.5  '' East 30 Pit 1 - Heater #3 Resistance
+  heater(4) = 1041.5  '' East 30 Pit 2 - Heater #1 Resistance
+  heater(5) = 1041.5  '' East 30 Pit 2 - Heater #2 Resistance
+  heater(6) = 1041.5  '' East 30 Pit 2 - Heater #3 Resistance
+  
+  Scan(30,Sec, 10, 0)
+
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''
+    '' Diagnostic Measurements  '''''
+    '''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''    
+    Battery(batt_volt)
+    PanelTemp(Ptemp,_60Hz)
+    p_sig = Signature
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '' Radio and Thermal Conducitivity Control  ''''''''
+    '' Also CNR4 Fan/Heater Control             ''''''''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''
+    If radioflag=true Then SW12(1)
+      ' if the battery voltage is high then turn the radio on hourly 
+      ' also allow the thermal conductivity sensors to be measured
+      If TimeIntoInterval(0,60,min) Then
+        If batt_volt >= 12.4 Then 
+          SW12(1)
+          measureTC = true
+        EndIf
+      EndIf
+      ' if the battery voltage isn't too low, turn the radio on daily.
+      If TimeIntoInterval(720,1440,min) Then
+        If batt_volt >= 12.2 Then 
+          SW12(1)
+          measureTC = true
+        EndIf
+      EndIf
+      ' if the radioflag hasn't been set manually then turn the radio off 10 minutes into the hour.
+      If TimeIntoInterval(10,60,min) OR commscomplete = true Then
+        If radioflag = false Then 
+          SW12(0)
+          commscomplete = false
+        EndIf
+      EndIf      
+      ' radioflag is used to leave the radio turned on all the time (typically used remotely)
+      If batt_volt < 12.6 Then radioflag = false
+      RealTime(cnr4time())
+      If thisDayOfYear > 105 AND thisDayOfYear < 258 Then  'period 4/15 to 9/15
+        If TimeIntoInterval(0,60,min) Then  ' once per hour check to see if the heater/fan should be on.
+          If batt_volt > 12.6 Then  ' if the voltage is good, then turn on the heater/fan
+            PortSet(3,1)
+          Else  ' otherwise, turn it off.
+            PortSet(3,0)
+          EndIf
+        EndIf
+      Else ' not in that period, make sure the CNR4 heater/fan is off
+        PortSet(3,0)
+      EndIf
+          
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '' Measure Thermistor Probes on Multiplexer #1 ''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''   
+    If TimeIntoInterval (0,10,Min) Then
+      PortSet(1,1)  'Multiplexer #1 ON
+      i = 1
+      SubScan(0,uSec,32)
+        PulsePort(4,10000)
+        BrHalf (TP_ratio, 1, mV2500, 13, Vx2, 1, 2500, False, 0, 250,1.0,0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux1(i) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i)  'calculate temperature with correction for zero offset
+  
+        BrHalf (TP_ratio, 1, mV2500, 14, Vx2, 1, 2500, False, 0, 250, 1.0, 0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux1(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux1(i+1)  'calculate temperature with correction for zero offset
+        i = i+2      
+      NextSubScan
+      PortSet(1,0)  'Multiplexer #1 OFF
+    EndIf
+    
+    ''''''''''''''''''''''''''''''''''''''  '''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '' Measure Thermistor Probes on Multiplexer #2 ''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''        
+    If TimeIntoInterval (0,10,Min) Then
+      PortSet(1,1)  'Multiplexer #2 ON
+      i = 1
+      SubScan(0,uSec,12)
+        ' Loop through the Thermal Conductivity Probes
+        PulsePort(4,10000)
+      NextSubScan
+      SubScan(0,uSec,15)
+        PulsePort(4,10000)
+        BrHalf (TP_ratio, 1, mV2500, 15, Vx3, 1, 2500, False, 0, 250,1.0,0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux2(i) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux2(i)  'calculate temperature with correction for zero offset
+  
+        BrHalf (TP_ratio, 1, mV2500, 16, Vx3, 1, 2500, False, 0, 250, 1.0, 0)
+        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
+        Thermistors_Mux2(i+1) = 1/(C1+C2*LN(TP_Rt)+C3*LN(TP_Rt)^3) - 273.15 - Thermistors_offset_Mux2(i+1)  'calculate temperature with correction for zero offset
+        i = i+2      
+      NextSubScan
+      PortSet(1,0)  'Multiplexer #2 OFF
+    EndIf
+    '''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''    
+    '' Measure the Heat Flux Plate HFP01   ''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''    
+    If TimeIntoInterval(0,10,min) Then
+      PortSet(1,1)
+      i = 1
+      SubScan(0,usec,27)
+        'loop through the thermal conductivity probes and thermistors
+        PulsePort(4,10000)
+      NextSubScan
+      SubScan(0,sec,3)    
+        PulsePort(4,10000)    
+        VoltDiff(shf(i),1,mV25C,8,True,200,250,1,0)
+        i = i + 1
+      NextSubScan
+      PortSet(1,0)
+      ' Convert mV to W/m^2
+      shf(1) = shf(1) * HFP01_cal_1
+      shf(2) = shf(2) * HFP01_cal_2
+    EndIf        
+    '''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''
+    '' Measure the SR50a snow sensor(s)  ''''
+    '''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''' 
+    Therm107 (AirTemp,1,8,Vx1,0,250,1.0,0)
+           
+    If  TimeIntoInterval(0,5,Min) Then
+      SDI12Recorder(Raw_Dist_1,5, 7, "M!", 100, 0)        ' Units are Centimeters
+      Distance_1 = Raw_Dist_1*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
+      SnowDepth_1 = SR50A_height_1 - Distance_1
+      SDI12Recorder(Raw_Dist_2,5,8, "M!", 100, 0)        ' Units are Centimeters
+      Distance_2 = Raw_Dist_2*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
+      SnowDepth_2 = SR50A_height_2 - Distance_2
+
+    EndIf
+    
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''    
+    '' Measure Hydra II Probes  ''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''    
+    If  TimeIntoInterval(0,30,Min) Then
+      Timer(1,msec,2)
+      PortSet(6,1)
+      Delay (0,5,Sec)
+      k = 1
+      SubScan(0,uSec,6)
+        SDI12Recorder (Hydra(k,1),5,k,"M!",1.0,0) 'read 9 soil parameters
+        SDI12Recorder (HydraRaw(k,1),5,k,"M4!",1.0,0) 'read 9 soil parameters
+        'reassign things to more useful variables
+        Hydra_moisture(k) = Hydra(k,1)
+        Hydra_temp(k) = Hydra(k,3)
+        Hydra_cond(k) = Hydra(k,5)
+        Hydra_real_perm(k) = Hydra(k,6)
+        Hydra_img_perm(k) = Hydra(k,7)
+        HydraA(k) = HydraRaw(k,1)
+        HydraB(k) = HydraRaw(k,2)
+        HydraC(k) = HydraRaw(k,3)
+        HydraD(k) = HydraRaw(k,4)
+        HydraE(k) = HydraRaw(k,5)
+        k = k+1
+      NextSubScan
+      PortSet(6,0)  'power off
+      hTime = Timer(1,msec,4) / 1000
+    EndIf
+
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ''' Measure the Thermal Conductivity Sensors  '''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''
+    generator = 0
+    sum = 0
+    tc = 0
+    If  TimeIntoInterval(0,1440,Min) Then 
+      If measureTC = true Then
+        Flag(1) = True         
+      EndIf
+    EndIf  
+    If Flag(1) = True Then    
+      generator = 1
+      sum = 2.72
+      tc = 1
+      ' steady state, iniital measurments
+      PortSet (1,1)       ' turn on mux #2 & loop through the thermocouples
+      SubScan(0,Sec,6)
+        PulsePort (4, 10000)      
+        TCDiff(Tinitial(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
+        PulsePort (4, 10000)
+        tc = tc + 1
+      NextSubScan
+      PortSet (1,0)       ' turn off mux #2
+      Timer(0,Sec,2)      ' start the measurement timer
+      PortSet (8,1)       ' turn heaters on 
+      For i1 = 1 To 36                
+        generator = generator + 0.1
+        expgener = EXP(generator)
+        ' an exponential delay algorithm 
+        For i2 = 1 To 200 
+          Delay (0,700,mSec)              
+          sum = sum + 0.5
+          If (sum >= expgener) Then      ExitFor       
+        Next i2  
+        ' loop through the thermal conductivity probes
+        tc = 1
+        muxincr = 1
+        PortSet(1,1)  
+        SubScan(0,Sec,6)
+          PulsePort(4,10000)
+          TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
+          PulsePort(4,10000)
+          VoltDiff(Vref, 1, mV250,8, True, 0, 250, 0.001, 0)  
+          time(tc) = Timer(0,mSec,4) /1000
+          Trise(tc) = Theat(tc) - Tinitial(tc)
+          sqVref = Vref * Vref
+          power (tc) = sqVref * heater(tc)
+          tc = tc + 1
+        NextSubScan
+        PortSet(1,0)      
+        CallTable TableTC
+      Next i1
+      ' turn off current excitation
+      PortSet(8,0)    
+      ' end of measurment
+      Flag(1) = False    
+      measureTC = false  
+    EndIf
+    
+    
+    '''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''
+    '' Met Instrumentation  '''''''
+    '''''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''''
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' Measure the Anemometers          '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    PulseCount(ws,2,1,2,1,0.8,0.447)
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' Tipping Bucket Measurement       '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    PulseCount(summer_rain,1,17,2,0,0.1,0)
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' HMP155 Air Temperature / RH      '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    PortSet(2,1)
+    Delay(0,2,sec) 'allow sensor to stabilize  
+    PulsePort(4,10000)        
+    VoltDiff(at1m,1,mv2500,6,0,0,_60Hz,0.14,-80)
+    PulsePort(4,10000)        
+    VoltDiff(rh1m,1,mv2500,6,0,0,_60Hz,0.1,0)
+    PulsePort(4,10000)        
+    VoltDiff(at35m,1,mv2500,6,0,0,_60Hz,0.14,-80)
+    PulsePort(4,10000)        
+    VoltDiff(rh35m,1,mv2500,6,0,0,_60Hz,0.1,0)
+    DewPoint (dp1m,at1m,rh1m)
+    DewPoint (dp35m,at35m,rh35m)
+    
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' CNR4 4 Component Net Radiation   '''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''' Note, for fan on/off see control  ''''
+    ''' section at the top of this program '''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    BrHalf(CNR_Therm,1,mV2500C,7,Vx1,1,2500,True,0,_60Hz,1,0)  
+    CNR_Therm = CNR_Resistor  * (CNR_Therm / (1 - CNR_Therm) ) 
+    CNR_Temp_K = 1 / ( 1.029e-3 + 2.391e-4 * LN(CNR_Therm) + 1.568e-7*(LN(CNR_Therm))^3)
+    PulsePort(4,10000)            
+    VoltDiff (short_up,1,mV25C,6,True ,0,_60Hz,SW_UP_CF,0)       ' Measure SW UP
+    PulsePort(4,10000)        
+    VoltDiff (short_dn,1,mV25C,6,True ,0,_60Hz,SW_DN_CF,0)       ' Measure SW DN
+    PulsePort(4,10000)        
+    VoltDiff (long_up,1,mV25C,6,True ,0,_60Hz,LW_UP_CF,0)       ' Measure LW UP
+    long_up = long_up + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
+    PulsePort(4,10000)        
+    VoltDiff (long_dn,1,mV25C,6,True ,0,_60Hz,LW_DN_CF,0)       ' Measure LW DN
+    long_dn = long_dn + 5.67e-8 * CNR_Temp_K^4                  ' temperature correction
+    Rs_net = short_up - short_dn
+    Rl_net = long_up - long_dn
+    albedo = short_dn / short_up
+    Net_rad = Rs_net + Rl_net
+
+    PortSet(2,0)  
+
+    '''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''
+    '' Output to Storage  '''''''
+    '''''''''''''''''''''''''''''
+    '''''''''''''''''''''''''''''
+    CallTable Subsurface
+    CallTable Snow
+    CallTable Diagnostic
+    CallTable Met  
+  NextScan
+EndProg
