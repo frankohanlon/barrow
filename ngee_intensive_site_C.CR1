@@ -1,12 +1,13 @@
 'CR1000 Series Datalogger
 ' Bob Busey & Bill Cable for:
 ' NGEE Barrow Intensive Site ________C________
-' Draft V2.0
+' Draft V2.1
 ' Creation Dates: 2012-08-16
 ' Modified: 2012-09-20
 ' Modified: 2013-01-09 fixed HFP bugs
 ' Modified: 2013-04-11  - 2013-06-10 Major Update: Adding Met Instrumentation
-'
+' Modified: 2013-09-05 - Minor update, disabling CNR4 heater/fan due to lack of energy input.
+
 ' Find the latest version of the program here:
 ' C:\Users\rcbusey\Dropbox\logger_programs\barrow\
 ' Or here:
@@ -758,17 +759,19 @@ BeginProg
       ' radioflag is used to leave the radio turned on all the time (typically used remotely)
       If batt_volt < 12.6 Then radioflag = false
       RealTime(cnr4time())
-      If thisDayOfYear > 105 AND thisDayOfYear < 258 Then  'period 4/15 to 9/15
-        If TimeIntoInterval(0,60,min) Then  ' once per hour check to see if the heater/fan should be on.
-          If batt_volt > 12.6 Then  ' if the voltage is good, then turn on the heater/fan
-            PortSet(3,1)
-          Else  ' otherwise, turn it off.
-            PortSet(3,0)
-          EndIf
-        EndIf
-      Else ' not in that period, make sure the CNR4 heater/fan is off
-        PortSet(3,0)
-      EndIf
+      ' 2013-09-05
+      ' heater/fan ends up totally being a battery drain.  permanently disabling.
+'      If thisDayOfYear > 105 AND thisDayOfYear < 258 Then  'period 4/15 to 9/15
+'        If TimeIntoInterval(0,60,min) Then  ' once per hour check to see if the heater/fan should be on.
+'          If batt_volt > 12.6 Then  ' if the voltage is good, then turn on the heater/fan
+'            PortSet(3,1)
+'          Else  ' otherwise, turn it off.
+'            PortSet(3,0)
+'          EndIf
+'        EndIf
+'      Else ' not in that period, make sure the CNR4 heater/fan is off
+'        PortSet(3,0)
+'      EndIf
       
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
