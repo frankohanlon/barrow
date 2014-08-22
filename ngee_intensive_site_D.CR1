@@ -4,6 +4,7 @@
 ' Draft V1.0
 ' Creation Dates: 2013-08-14
 '
+' revised 2014-08-21 to fix a thermal conductivity program bug.
 ' Find the latest version of the program here:
 ' C:\Users\rcbusey\Dropbox\logger_programs\barrow\
 ' Or here:
@@ -114,8 +115,8 @@
 ' signal ground black
  
 ' HFP01
-' White Wire -- AM16/32B HI  28 & 29
-' Green Wire -- AM16/32B LO  28 & 29
+' White Wire -- AM16/32B HI  25 
+' Green Wire -- AM16/32B LO  25 
 ' Clear Wire -- AM16/32B Signal Ground
 
 ' SR50A
@@ -272,12 +273,14 @@
     Public sqVref
     Public Tinitial(6)
     public V_Ratio(6)
-    public V_therm(6)
+    Public V_therm(6)
     Public Theat(6)
     Public time (6)
     Public Trise (6)
     Public power(6)
     Public heater(6)
+    Public heat_therm(6)
+    Public init_therm(6)
     Public measureTC As Boolean
 
     ''' Extras
@@ -512,7 +515,8 @@ Alias cnr4time(9) = thisDayOfYear
     DataTable(TableTC,true,-1)
       Sample(6, time,IEEE4)
       Sample(6, Trise, FP2)
-      Sample(6, power, FP2)
+      Sample(6,init_therm,fp2)
+      Sample(6,heat_therm,fp2)
     EndTable
 
     DataTable(Met,true,-1)
@@ -545,8 +549,10 @@ BeginProg
 
   Signature
   ' Snow
-  SR50A_height_1 = 0  ' units are centimeters; adjusted 2013-08
+  SR50A_height_1 = 169.53  ' units are centimeters; adjusted 2013-08
   commscomplete = false
+  SW12 (1 )  ' turn on the radio
+  
   
   ' Thermistor offsets  
   Thermistors_offset_Mux1 ( 1  ) 	=	0.005	''	 Bore Hole - 1 Thermistor _1_ TP1205
@@ -693,18 +699,18 @@ BeginProg
       EndIf      
       ' radioflag is used to leave the radio turned on all the time (typically used remotely)
       If batt_volt < 12.6 Then radioflag = false
-      RealTime(cnr4time())
-      If thisDayOfYear > 105 AND thisDayOfYear < 258 Then  'period 4/15 to 9/15
-        If TimeIntoInterval(0,60,min) Then  ' once per hour check to see if the heater/fan should be on.
-          If batt_volt > 12.6 Then  ' if the voltage is good, then turn on the heater/fan
-            PortSet(3,1)
-          Else  ' otherwise, turn it off.
-            PortSet(3,0)
-          EndIf
-        EndIf
-      Else ' not in that period, make sure the CNR4 heater/fan is off
-        PortSet(3,0)
-      EndIf
+'      RealTime(cnr4time())
+'      If thisDayOfYear > 105 AND thisDayOfYear < 258 Then  'period 4/15 to 9/15
+'        If TimeIntoInterval(0,60,min) Then  ' once per hour check to see if the heater/fan should be on.
+'          If batt_volt > 12.6 Then  ' if the voltage is good, then turn on the heater/fan
+'            PortSet(3,1)
+'          Else  ' otherwise, turn it off.
+'            PortSet(3,0)
+'          EndIf
+'        EndIf
+'      Else ' not in that period, make sure the CNR4 heater/fan is off
+'        PortSet(3,0)
+'      EndIf
           
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
     '''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -761,7 +767,7 @@ BeginProg
     If TimeIntoInterval(0,10,min) Then
       PortSet(1,1)
       i = 1
-      SubScan(0,usec,27)
+      SubScan(0,usec,24)
         'loop through the thermal conductivity probes and thermistors
         PulsePort(4,10000)
       NextSubScan   
@@ -777,11 +783,13 @@ BeginProg
     '' Measure the SR50a snow sensor(s)  ''''
     '''''''''''''''''''''''''''''''''''''''''
     ''''''''''''''''''''''''''''''''''''''''' 
-    Therm107 (AirTemp,1,8,Vx1,0,250,1.0,0)
            
     If  TimeIntoInterval(0,5,Min) Then
+      PortSet(6,1)
+      Delay (0,1,Sec)      
       SDI12Recorder(Raw_Dist_1,5, 7, "M!", 100, 0)        ' Units are Centimeters
-      Distance_1 = Raw_Dist_1*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
+      PortSet(6,0)
+      Distance_1 = Raw_Dist_1*SQR((at1m+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_1 = SR50A_height_1 - Distance_1
 
     EndIf
@@ -841,10 +849,14 @@ BeginProg
 '        BrHalf (TP_ratio, 1, mV2500, 15, Vx3, 1, 2500, False, 0, 250,1.0,0)
 '        TP_Rt = Rf*(TP_ratio/(1-TP_ratio))  'calculate resistance
         BrHalf (V_Ratio(tc),1,mV250,15,Vx3,1,50,False,0,_60Hz,1,0)
+        ' 1) computer resistance
+        ' 2) v_ratio = 10 / (Rtherm + 10)
+        TP_Rt = Rf* ( V_Ratio(tc) / (1 - V_Ratio(tc) ) )
+        V_ratio(tc) = 10000 / (TP_Rt + 10000)
         V_therm(tc) = LN( Rf * (1/V_ratio(tc) ) )
+        init_therm(tc) = V_therm(tc)
         Tinitial(tc) = -0.1087 * V_therm(tc)^3 + 1.6066 * V_therm(tc)^2 - 22.801 * V_therm(tc) - 273.15
         ' TCDiff(Tinitial(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
-        PulsePort (4, 10000)
         tc = tc + 1
       NextSubScan
       PortSet (1,0)       ' turn off mux #2
@@ -867,11 +879,11 @@ BeginProg
           PulsePort(4,10000)
 '          TCDiff(Theat(tc),1,mV2_5C,8,TypeE,Ptemp,True,0,250,1,0)
           BrHalf (V_Ratio(tc),1,mV250,15,Vx3,1,50,False,0,_60Hz,1,0)
+          TP_Rt = Rf* ( V_Ratio(tc) / (1 - V_Ratio(tc) ) )
+          V_ratio(tc) = 10000 / (TP_Rt + 10000)          
           V_therm(tc) = LN( Rf * (1/V_ratio(tc) ) )
+          Heat_therm(tc) = V_therm(tc)
           Theat(tc) = -0.1087 * V_therm(tc)^3 + 1.6066 * V_therm(tc)^2 - 22.801 * V_therm(tc) - 273.15
-          
-          PulsePort(4,10000)
-          VoltDiff(Vref, 1, mV250,8, True, 0, 250, 0.001, 0)  
           time(tc) = Timer(0,mSec,4) /1000
           Trise(tc) = Theat(tc) - Tinitial(tc)
           sqVref = Vref * Vref
