@@ -1,12 +1,16 @@
 'CR1000 Series Datalogger
 ' Bob Busey & Bill Cable for:
 ' NGEE Barrow Intensive Site ________C________
-' Draft V2.1
+' Draft V2.2
 ' Creation Dates: 2012-08-16
 ' Modified: 2012-09-20
 ' Modified: 2013-01-09 fixed HFP bugs
 ' Modified: 2013-04-11  - 2013-06-10 Major Update: Adding Met Instrumentation
 ' Modified: 2013-09-05 - Minor update, disabling CNR4 heater/fan due to lack of energy input.
+' Modified: 2015-06-25 - added two more hydraprobe II sensors, 
+'                      - added quality number to data request from sr50a
+'                      - added cfm100 module
+' Modified: 2015-09-29 - fixed quality number output limit so it fits into FP2 data size.
 
 ' Find the latest version of the program here:
 ' C:\Users\rcbusey\Dropbox\logger_programs\barrow\
@@ -21,7 +25,7 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' 2 -- HFP01 Heat Flux Plates
-' 6 -- Vitel HydraProbe II Probes
+' 8 -- Vitel HydraProbe II Probes
 ' 6 -- East30 Sensors Thermal Conductivity Probes 
 ' 5 -- GI 16 point thermistor strings
 ' 6 -- GI thermistors to be installed adjacent to the soil moisture probes
@@ -286,9 +290,12 @@
     Public HydraD(9)   ' Voltage D
     Public HydraE(9)   ' Voltage E
     ''' Snow Related
-    Public Raw_Dist_1, Distance_1, SnowDepth_1, SR50A_height_1
-    Public Raw_Dist_2, Distance_2, SnowDepth_2, SR50A_height_2
-    Public Raw_Dist_3, Distance_3, SnowDepth_3, SR50A_height_3    
+    Public snowsensor1(2)
+    Public snowsensor2(2)
+    Public snowsensor3(2)
+    Public Distance_1, SnowDepth_1, SR50A_height_1
+    Public Distance_2, SnowDepth_2, SR50A_height_2
+    Public Distance_3, SnowDepth_3, SR50A_height_3    
     Public AirTemp
     Public hTime
     
@@ -454,6 +461,12 @@ Alias cnr4time(4) = thisHour
 Alias cnr4time(5) = thisMinute
 Alias cnr4time(9) = thisDayOfYear
 
+Alias snowsensor1(1) = Raw_Dist_1
+Alias snowsensor2(1) = Raw_Dist_2
+Alias snowsensor3(1) = Raw_Dist_3
+Alias snowsensor1(2) = SR50A_Quality_1
+Alias snowsensor2(2) = SR50A_Quality_2
+Alias snowsensor3(2) = SR50A_Quality_3
 ''''''''''''''''''''''''''''''
 ''''''''''''''''''''''''''''''
 '' Declare Constants '''''''''
@@ -514,6 +527,7 @@ Alias cnr4time(9) = thisDayOfYear
 '''''''''''''''''''''''''''''''
 
     DataTable (Diagnostic,1,-1)
+      CardOut(0,-1)
       DataInterval (0,1440,Min,10)
       Minimum (1,batt_volt,FP2,False,False)
       Minimum (1,Ptemp,FP2,False,False)
@@ -523,7 +537,8 @@ Alias cnr4time(9) = thisDayOfYear
     EndTable
     
     DataTable(Subsurface,true,-1)
-      DataInterval(0,60,Min,10)
+      CardOut(0,-1)
+      DataInterval(0,60,Min,10)      
       Minimum(1,batt_volt,FP2,False,False)
       Average(1,Ptemp,FP2, 0)      
       ' Thermistors
@@ -549,7 +564,33 @@ Alias cnr4time(9) = thisDayOfYear
       Sample(1,SnowDepth_3,FP2)        
     EndTable
 
+    DataTable(surface_SM,true,-1)
+      CardOut(0,-1)
+      DataInterval(0,60,min,10)
+      Sample(1,Hydra_moisture(7),fp2)
+      Sample(1,Hydra_temp(7),FP2)  'soil temperature, deg. C
+      Sample(1,hydra_cond(7),FP2)  'soil conductivity, Siemens / Meter
+      Sample(1,Hydra_real_perm(7),FP2)  'real dielectric permittivity
+      Sample(1,Hydra_img_perm(7),FP2)  'imaginary dielectric permittivity
+      Sample(1,HydraA(7),FP2)   ' Hydra Probe Voltage A
+      Sample(1,HydraB(7),FP2)   ' Hydra Probe Voltage B
+      Sample(1,HydraC(7),FP2)   ' Hydra Probe Voltage C
+      Sample(1,HydraD(7),FP2)   ' Hydra Probe Voltage D
+      Sample(1,HydraE(7),FP2)   ' Hydra Probe Voltage E                        
+      Sample(1,Hydra_moisture(8),fp2)
+      Sample(1,Hydra_temp(8),FP2)  'soil temperature, deg. C
+      Sample(1,hydra_cond(8),FP2)  'soil conductivity, Siemens / Meter
+      Sample(1,Hydra_real_perm(8),FP2)  'real dielectric permittivity
+      Sample(1,Hydra_img_perm(8),FP2)  'imaginary dielectric permittivity
+      Sample(1,HydraA(8),FP2)   ' Hydra Probe Voltage A
+      Sample(1,HydraB(8),FP2)   ' Hydra Probe Voltage B
+      Sample(1,HydraC(8),FP2)   ' Hydra Probe Voltage C
+      Sample(1,HydraD(8),FP2)   ' Hydra Probe Voltage D
+      Sample(1,HydraE(8),FP2)   ' Hydra Probe Voltage E   
+    EndTable                     
+
     DataTable(Snow,true,-1)
+      CardOut(0,-1)
       DataInterval(0,5,Min,10)
       Sample(1,SnowDepth_1,FP2)
       Sample (1,Distance_1,FP2)
@@ -557,16 +598,20 @@ Alias cnr4time(9) = thisDayOfYear
       Sample (1,Distance_2,FP2)
       Sample(1,SnowDepth_3,FP2)
       Sample (1,Distance_3,FP2)
-
+      Sample (1,SR50A_Quality_1,fp2)
+      Sample (1,SR50A_Quality_2,fp2)
+      Sample (1,SR50A_Quality_3,fp2)      
     EndTable
     
     DataTable(TableTC,true,-1)
+      CardOut(0,-1)
       Sample(6, time,IEEE4)
       Sample(6, Trise, FP2)
       Sample(6, power, FP2)
     EndTable
     
     DataTable(Met,true,-1)
+      CardOut(0,-1)
       DataInterval(0,60,Min,10)
       Average(1,at1m,fp2,0)
       Average(1,at35m,fp2,0)
@@ -603,6 +648,8 @@ BeginProg
   SR50A_height_2 = 110.9  ' units are centimeters
   SR50A_height_3 = 149.3  ' units are centimeters  
   commscomplete = false
+  radioflag=true
+  SW12 (1 )  ' turn on the radio
   
   ' Thermistor offsets  
   Thermistors_offset_Mux1 ( 1  ) = 0.035 '' Bore Hole - 1 Thermistor _1_ TP1229
@@ -851,15 +898,18 @@ BeginProg
     Therm107 (AirTemp,1,8,Vx1,0,250,1.0,0)
            
     If  TimeIntoInterval(0,5,Min) Then
-      SDI12Recorder(Raw_Dist_1,5, 7, "C!", 100, 0)        ' Units are Centimeters
+      SDI12Recorder(Raw_Dist_1,5, 7, "M1!", 100, 0)        ' Units are Centimeters
       Distance_1 = Raw_Dist_1*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_1 = SR50A_height_1 - Distance_1
-      SDI12Recorder(Raw_Dist_2,5,8, "C!", 100, 0)        ' Units are Centimeters
+      SR50A_Quality_1 = SR50A_Quality_1 / 100
+      SDI12Recorder(Raw_Dist_2,5,8, "M1!", 100, 0)        ' Units are Centimeters
       Distance_2 = Raw_Dist_2*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_2 = SR50A_height_2 - Distance_2
-      SDI12Recorder(Raw_Dist_3,5,9, "C!", 100, 0)        ' Units are Centimeters
+      SR50A_Quality_2 = SR50A_Quality_2 / 100
+      SDI12Recorder(Raw_Dist_3,5,9, "M1!", 100, 0)        ' Units are Centimeters
       Distance_3 = Raw_Dist_3*SQR((AirTemp+273.15)/273.15)	' Temperature Correction for distance
       SnowDepth_3 = SR50A_height_3 - Distance_3
+      SR50A_Quality_3 = SR50A_Quality_3 / 100
 
     EndIf
     
@@ -889,6 +939,33 @@ BeginProg
         HydraE(k) = HydraRaw(k,5)
         k = k+1
       NextSubScan
+      SDI12Recorder(Hydra(7,1),5,"A","M!",1.0,0)
+      SDI12Recorder(Hydra(8,1),5,"B","M!",1.0,0)
+      SDI12Recorder (HydraRaw(7,1),5,"A","M4!",1.0,0) 'read 9 soil parameters
+      SDI12Recorder (HydraRaw(8,1),5,"B","M4!",1.0,0) 'read 9 soil parameters      
+      'reassign things to more useful variables
+      Hydra_moisture(7) = Hydra(7,1)
+      Hydra_temp(7) = Hydra(7,3)
+      hydra_cond(7) = Hydra(7,5)
+      Hydra_real_perm(7) = Hydra(7,6)
+      Hydra_img_perm(7) = Hydra(7,7)
+      HydraA(7) = HydraRaw(7,1)
+      HydraB(7) = HydraRaw(7,2)
+      HydraC(7) = HydraRaw(7,3)
+      HydraD(7) = HydraRaw(7,4)
+      HydraE(7) = HydraRaw(7,5)
+      'reassign things to more useful variables
+      Hydra_moisture(8) = Hydra(8,1)
+      Hydra_temp(8) = Hydra(8,3)
+      hydra_cond(8) = Hydra(8,5)
+      Hydra_real_perm(8) = Hydra(8,6)
+      Hydra_img_perm(8) = Hydra(8,7)
+      HydraA(8) = HydraRaw(8,1)
+      HydraB(8) = HydraRaw(8,2)
+      HydraC(8) = HydraRaw(8,3)
+      HydraD(8) = HydraRaw(8,4)
+      HydraE(8) = HydraRaw(8,5)
+
       PortSet(6,0)  'power off
       hTime = Timer(1,msec,4) / 1000
     EndIf
@@ -1033,5 +1110,6 @@ BeginProg
     CallTable Snow
     CallTable Diagnostic
     CallTable Met
+    CallTable surface_SM
   NextScan
 EndProg
