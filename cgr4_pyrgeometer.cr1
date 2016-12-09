@@ -1,0 +1,109 @@
+'CR1000 Series Datalogger
+' NGEE / AWI Barrow IR Tower 
+' Upward Looking LW Radiometer Program
+' Eventually we'll add soil moisture sensors
+' Iniitial Program Written 5/2015
+' Version 1.0
+
+'*** Wiring ***
+' Connected Sensors:
+'  + Kipp & Zonen CGR3 LW Radiometer configured w/ PRT Temperature
+ 
+'ANALOG INPUT
+' 1H  -- long-wave pyranometer sensor signal (red wire)
+' 1L  -- long-wave pyranometer sensor signal reference (blue wire)
+' 2H  -- long-wave pyranometer PRT Hi (Yellow Wire) & Precision Resistor to Vx1
+' 2L  -- long-wave pyranometer PRT Hi2 (Brown Wire)
+
+'gnd long-wave pyranometer sensor signal sheild (black)
+'gnd long-wave pyranometer sensor signal ground (green wire)
+
+
+'VOLTAGE EXCITATION
+'VX1 -- Precision Resistor to 2H
+'####################
+
+'*** Constants *** ##### modified for CGR3
+
+
+'CGR3's sensitivity
+Const CGR3_Sen = 7.05*10^-3 'mV/W/m^2, CGR3's sensitivity on its body is 5 to 15
+
+
+'10K ohm resistors' impedance
+Const R = 10000 '##### ???
+
+'*** Declare Variables and Units ***
+Public PTemp, batt_volt
+'Public temp_cgr3
+Public Rad_cgr3
+Public Rad_cgr_3_tot_MJ
+Public cal_cgr3
+Public un_cal_cgr3
+
+Public res_cgr3 'thermistor_cgr3
+
+Public T_cgr3
+
+Public body_temp_cgr3
+
+Units batt_volt=Volts
+Units PTemp=Deg c
+'Units Temp_C=Deg c
+
+'*** Final Output Data Tables ***
+
+'Half Hour Data Table
+DataTable (Half_Hour,1,-1)
+DataInterval (0,30,Min,10)
+Average (1,Rad_cgr3,FP2,False)
+EndTable
+
+'Daily Data Table
+DataTable (Daily,True,-1)
+DataInterval (0,1440,Min,10)
+Sample (1,Rad_cgr_3_tot_MJ,FP2)
+EndTable
+
+'*** Working Data Tables ***
+
+DataTable (AVG,True,1)
+DataInterval (0,0,Min,10)
+Average (1,body_temp_cgr3,FP2,False)
+Average (1,Rad_cgr3,FP2,False)
+Average (1,un_cal_cgr3,FP2,False)
+EndTable
+
+
+'*** Program ***
+
+BeginProg
+  	'Main Scan
+Scan (1,Sec,0,0)
+  'Default Wiring Panel Temperature measurement 'PTemp_C'
+PanelTemp (PTemp,_60Hz)
+		'Default Datalogger Battery Voltage measurement 'BattV'
+Battery (batt_volt)
+
+VoltDiff (un_cal_cgr3,1,mV25,1,True ,3000,_60Hz,1.0,0)
+
+cal_cgr3=un_cal_cgr3/CGR3_Sen
+
+' pt100
+BrHalf3W (res_cgr3,1,mV250,3,Vx1,1,250,True ,0,_60Hz,1,0)
+PRTCalc (T_cgr3,1,res_cgr3,1,1,273.15)
+
+body_temp_cgr3 = T_cgr3^4 * 5.67 * 10^-8
+Rad_cgr3 = cal_cgr3 + body_temp_cgr3
+
+CallTable Half_Hour
+CallTable AVG
+
+If IfTime (0,1440,Min) Then
+Rad_cgr_3_tot_MJ = AVG.Rad_cgr3_AVG(1,1) * 0.0864
+EndIf
+
+CallTable Daily
+NextScan
+EndProg
+
